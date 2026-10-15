@@ -1,0 +1,29 @@
+{
+  "_说明": "推特监控配置。填完保存即可，不用改脚本。",
+
+  "_通道1_api_key": "去 https://twitterapi.io 注册（30秒，送 $0.1 试用额度，不用信用卡），在 dashboard 复制 API key 粘到下面",
+  "api_key": "",
+
+  "_通道2_proxy": "本机代理。Clash Verge 默认 7897，不用改；填 \"\" 表示直连",
+  "proxy": "http://127.0.0.1:7897",
+
+  "_通道3_accounts": "要盯的账号清单（不带 @）。每多一个账号，每次扫描多一次调用",
+  "accounts": [
+    "yourQuantGuy"
+  ],
+
+  "_通道4_keywords": "可选：关键词监控，走全站搜索。留空数组即关闭。例：[\"资金费率\", \"套利\"]",
+  "keywords": [],
+
+  "_通道5_include_replies": "是否推送「回复」类推文。false = 只要原创和转推",
+  "include_replies": false,
+
+  "_通道6_min_likes": "点赞数低于这个值就不推（过滤噪音）。0 = 不过滤",
+  "min_likes": 0,
+
+  "_通道7_max_age_minutes": "只推「多少分钟内」的新推。防止脚本重启后把旧料一次性补推出来",
+  "max_age_minutes": 180,
+
+  "_通道8_per_account_limit": "每个账号最多扫描最近多少条（20 的倍数，越大越费额度）",
+  "per_account_limit": 20
+}

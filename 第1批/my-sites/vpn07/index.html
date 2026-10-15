@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vpn07 邀请 · 稳定快速的全球网络加速</title>
+<style>
+  :root{
+    --bg:#f5f4f1; --card:#ffffff; --ink:#1e1c18; --muted:#726c63;
+    --line:#e7e3dc; --accent:#2f6b57; --accent-soft:#e9f2ee;
+    --gold:#a8701f; --gold-soft:#fbf3e2; --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.7;
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto;padding:0 20px}
+
+  header.top{padding:54px 0 26px;text-align:center}
+  .brand{font-size:13px;letter-spacing:2px;color:var(--accent);font-weight:600;margin-bottom:14px}
+  h1{font-family:"Noto Serif SC",Georgia,"Songti SC",serif;font-size:34px;margin:0 0 14px;letter-spacing:.5px;line-height:1.3}
+  .lead{color:var(--muted);font-size:15px;max-width:600px;margin:0 auto 26px}
+  .cta{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;
+    padding:14px 30px;border-radius:999px;font-size:16px;font-weight:600;text-decoration:none;
+    box-shadow:0 10px 26px -12px rgba(47,107,87,.6);transition:transform .15s, box-shadow .2s}
+  .cta:hover{transform:translateY(-1px);box-shadow:0 14px 30px -12px rgba(47,107,87,.7)}
+  .cta-sub{display:block;color:var(--muted);font-size:12.5px;margin-top:12px}
+
+  .invite{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin:32px 0 8px;
+    display:flex;gap:22px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .invite .label{font-size:12.5px;color:var(--muted);margin-bottom:6px}
+  .code{display:inline-flex;align-items:center;gap:8px;background:var(--accent-soft);color:var(--accent);
+    border-radius:10px;padding:8px 14px;font-size:19px;font-weight:700;cursor:pointer;
+    font-family:ui-monospace,"JetBrains Mono",Consolas,monospace;border:1px dashed transparent}
+  .code:hover{border-color:var(--accent)}
+  .qr{width:132px;height:132px;border:1px solid var(--line);border-radius:12px;background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;text-align:center;padding:8px}
+
+  h2{font-size:17px;margin:40px 0 14px;padding-left:11px;border-left:4px solid var(--accent)}
+
+  /* 邀请文案 */
+  .copybox{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+  .copybox .txt{font-size:14.5px;color:#3a3630;white-space:pre-wrap;line-height:1.9;margin-bottom:12px}
+  .btn-copy{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border:none;
+    padding:8px 18px;border-radius:999px;font-size:13.5px;cursor:pointer;font-family:inherit}
+  .btn-copy:hover{opacity:.92}
+
+  /* 下载 */
+  .dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+  .dlcard{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:8px}
+  .dlcard h3{margin:0;font-size:16px}
+  .dlcard p{margin:0;font-size:12.5px;color:var(--muted);flex:1}
+  .dlcard a{align-self:flex-start;font-size:13px;color:var(--accent);text-decoration:none;
+    border:1px solid var(--accent-soft);padding:5px 14px;border-radius:9px}
+  .dlcard a:hover{background:var(--accent-soft)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:8px 0}
+  .feat{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .feat h3{margin:0 0 6px;font-size:15.5px}
+  .feat p{margin:0;font-size:13px;color:var(--muted)}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border-radius:12px;overflow:hidden}
+  th,td{border-bottom:1px solid var(--line);padding:11px 14px;text-align:left}
+  th{background:#fbfaf7;font-weight:600;font-size:13px}
+  td .price{color:var(--gold);font-weight:700}
+  tr:last-child td{border-bottom:none}
+
+  ol.steps{list-style:none;counter-reset:s;padding:0;margin:10px 0}
+  ol.steps li{counter-increment:s;position:relative;padding:12px 0 12px 46px;border-bottom:1px solid var(--line);font-size:14.5px}
+  ol.steps li:last-child{border-bottom:none}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;
+    background:var(--accent-soft);color:var(--accent);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:10px 0;font-size:14px}
+  details summary{cursor:pointer;font-weight:600;outline:none;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary::before{content:"+ ";color:var(--accent);font-weight:800}
+  details[open] summary::before{content:"– "}
+  details p{margin:8px 0 0;color:var(--muted);font-size:13.5px}
+
+  footer{padding:34px 0 56px;text-align:center;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);margin-top:40px}
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     ① 数据区：你只需要改这里
+     ========================================================= -->
+<script>
+const SITE = {
+  brand: "VPN07 · 我的推荐",
+  title: "我在用 vpn07，邀请你一起用",
+  lead: "70+ 国家节点，稳定访问 AI 与流媒体。注册时填我的邀请码，首月更划算。",
+  ctaText: "用邀请链接注册",
+  inviteUrl: "https://vpn07.com/index.html#/register?code=YOUR_INVITE_CODE",
+  inviteCode: "YOUR_INVITE_CODE",
+  inviteText: "我在用 vpn07，邀请你一起用！注册时填写我的邀请码：YOUR_INVITE_CODE",
+  ctaSub: "iOS：官网登录后注册（官网需开 VPN）；安卓 / Windows / macOS：直接下载安装",
+
+  features: [
+    { h:"70+ 国家节点", p:"覆盖美、日、韩、新、港、英等主流与冷门地区。" },
+    { h:"AI 工具可用", p:"稳定访问 ChatGPT、Claude、Gemini 等生产力工具。" },
+    { h:"流媒体 4K", p:"YouTube、Netflix、Disney+ 原生 IP，秒开不卡。" },
+    { h:"全平台通用", p:"一个账号通用手机与电脑，多设备在线。" }
+  ],
+
+  downloads: [
+    { os:"iOS", note:"需先登录官网注册（官网需开 VPN 才能访问）",
+      url:"https://vpn07.com/index.html#/register?code=YOUR_INVITE_CODE", label:"打开官网" },
+    { os:"Android / 鸿蒙", note:"直接下载安装即可",
+      url:"https://2.clash2.com/07anzhuo.apk", label:"下载 APK" },
+    { os:"Windows", note:"直接下载安装即可",
+      url:"https://2.clash2.com/07windows.exe", label:"下载 .exe" },
+    { os:"macOS", note:"直接下载安装即可",
+      url:"https://2.clash2.com/07macos.dmg", label:"下载 .dmg" }
+  ],
+
+  plans: [
+    { name:"体验套餐", price:"¥9.90/月", flow:"60GB/月" },
+    { name:"基础套餐", price:"¥18.00/月", flow:"250GB/月" },
+    { name:"进阶套餐", price:"¥28.00/月", flow:"500GB/月" },
+    { name:"高级套餐", price:"¥88.00/月", flow:"2000GB/月" }
+  ],
+
+  steps: [
+    "注册：安卓 / Windows / macOS 直接下载客户端后注册；iOS 先登录官网（需开 VPN），注册时填邀请码 YOUR_INVITE_CODE。",
+    "下载：按你的系统下载对应安装包，安装并打开。",
+    "登录：用刚注册的账号登录客户端。",
+    "连接：选一个节点，点「连接」即可使用。"
+  ],
+
+  faqs: [
+    { q:"为什么要填我的邀请码？", a:"对你没有任何额外费用，只是我这边会有一点老用户回馈，谢谢你。" },
+    { q:"iOS 为什么打不开官网？", a:"官网在境外，需要先在别的设备上开 VPN 才能访问；或先注册再回来填。" },
+    { q:"贵不贵？", a:"入门档每月不到 10 元，长期用选年付更省。" },
+    { q:"打不开或连不上怎么办？", a:"换个节点、重启客户端再试；仍不行可联系服务方客服。" }
+  ],
+
+  footer: "本站仅为个人推荐，服务由第三方提供。请自行判断并遵守当地法律法规。"
+};
+</script>
+<!-- ② 以下为渲染逻辑，一般不用动 -->
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand" id="brand"></div>
+    <h1 id="title"></h1>
+    <p class="lead" id="lead"></p>
+    <a class="cta" id="cta" href="#"><span id="ctaText"></span> →</a>
+    <span class="cta-sub" id="ctaSub"></span>
+  </header>
+
+  <section class="invite">
+    <div>
+      <div class="label">我的邀请码（点一下复制）</div>
+      <span class="code" id="code"></span>
+    </div>
+    <div class="qr">二维码位置<br>（可放你的邀请二维码）</div>
+  </section>
+
+  <h2>邀请文案（一键复制转发）</h2>
+  <div class="copybox">
+    <div class="txt" id="inviteText"></div>
+    <button class="btn-copy" id="copyBtn">复制邀请文案</button>
+  </div>
+
+  <h2>下载客户端</h2>
+  <div class="dl" id="downloads"></div>
+
+  <div class="grid" id="features" style="margin-top:26px"></div>
+
+  <h2>套餐一览</h2>
+  <table id="plans"></table>
+
+  <h2>简易教程</h2>
+  <ol class="steps" id="steps"></ol>
+
+  <h2>常见问题</h2>
+  <div id="faqs"></div>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+$("#brand").textContent = SITE.brand;
+$("#title").textContent = SITE.title;
+$("#lead").textContent = SITE.lead;
+$("#ctaText").textContent = SITE.ctaText;
+$("#cta").href = SITE.inviteUrl;
+$("#ctaSub").textContent = SITE.ctaSub;
+$("#code").textContent = SITE.inviteCode;
+$("#inviteText").textContent = SITE.inviteText;
+$("#downloads").innerHTML = SITE.downloads.map(d=>`
+  <div class="dlcard"><h3>${d.os}</h3><p>${d.note}</p><a href="${d.url}" target="_blank" rel="noopener">${d.label}</a></div>`).join("");
+$("#features").innerHTML = SITE.features.map(f=>`<div class="feat"><h3>${f.h}</h3><p>${f.p}</p></div>`).join("");
+$("#plans").innerHTML = `<tr><th>套餐</th><th>价格</th><th>流量</th></tr>` +
+  SITE.plans.map(p=>`<tr><td>${p.name}</td><td class="price">${p.price}</td><td>${p.flow}</td></tr>`).join("");
+$("#steps").innerHTML = SITE.steps.map(s=>`<li>${s}</li>`).join("");
+$("#faqs").innerHTML = SITE.faqs.map(f=>`<details><summary>${f.q}</summary><p>${f.a}</p></details>`).join("");
+$("#footer").textContent = SITE.footer;
+
+function flash(el, text){ const old=el.textContent; el.textContent=text; setTimeout(()=>el.textContent=old,900); }
+$("#code").onclick = () => { navigator.clipboard && navigator.clipboard.writeText(SITE.inviteCode); flash($("#code"),"已复制"); };
+$("#copyBtn").onclick = (e) => { navigator.clipboard && navigator.clipboard.writeText(SITE.inviteText); flash(e.target,"已复制 ✓"); };
+</script>
+
+<!-- 本地预览自动刷新：仅在本机打开时生效，上线后不影响 -->
+<script>
+if (["127.0.0.1","localhost"].includes(location.hostname)) {
+  let __lm = null;
+  setInterval(async () => {
+    try {
+      const r = await fetch(location.pathname, { method: "HEAD", cache: "no-store" });
+      const lm = r.headers.get("last-modified");
+      if (__lm && lm && lm !== __lm) location.reload();
+      __lm = lm;
+    } catch (e) {}
+  }, 1500);
+}
+</script>
+</body>
+</html>

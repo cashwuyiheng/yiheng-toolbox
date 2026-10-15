@@ -1,0 +1,23 @@
+﻿{
+  "_说明": "填哪个通道就用哪个，留空的自动忽略。填完保存即可，不用改动脚本。",
+  "_通道1_bark_iPhone": "装 Bark App，把 App 里给你的完整地址粘到下面（形如 https://api.day.app/你的key）",
+  "bark": "",
+  "_通道2_serverchan_微信": "去 https://sct.ftqq.com 用微信扫码登录，把 SendKey 粘到下面（形如 SCTxxxxx）",
+  "serverchan": "",
+  "_通道3_pushdeer": "去 https://www.pushdeer.com 注册，把 pushkey 粘到下面",
+  "pushdeer": "",
+  "_通道4_telegram": "填 bot 的 token 和你的 chat_id（需要梯子）",
+  "telegram": {
+    "token": "",
+    "chat_id": ""
+  },
+  "_通道5_企业微信机器人": "在群里加一个机器人，把它的 webhook 地址粘到下面",
+  "wecom": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_WECOM_WEBHOOK_KEY",
+
+  "_通道6_ntfy_手机强提醒": "安卓装 ntfy App，订阅同一个 topic。priority 4=高(响+震)，5=紧急(穿透免打扰)",
+  "ntfy": {
+    "server": "https://ntfy.sh",
+    "topic": "your-ntfy-topic",
+    "priority": 4
+  }
+}

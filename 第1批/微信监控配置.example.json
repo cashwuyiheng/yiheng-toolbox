@@ -1,0 +1,136 @@
+﻿{
+  "_说明": "微信群消息监控配置。填完保存即可，不用改代码。",
+
+  "_路径说明": "下面四行是固定的，一般不用动",
+  "source_db_dir": "C:\\Users\\<你>\\OneDrive\\xwechat_files\\wxid_YOUR_ACCOUNT_9e8a\\db_storage",
+  "keys_file": ".\微信监控\\all_keys.json",
+  "decrypt_dir": ".\微信监控\\解密",
+  "tool_path": ".\微信监控\\参考\\wcdb_key_tool_windows.py",
+
+  "_groups说明": "留空 = 监控全部群。想只盯几个就填群名（支持模糊匹配）。",
+  "groups": [],
+
+  "_ignore_groups说明": "这些群直接不看（营销群、门店群、推送号等，模糊匹配）。随便加减。",
+  "ignore_groups": [
+    "好想来",
+    "麦当劳",
+    "肯德基",
+    "瑞幸",
+    "星巴克",
+    "福利群",
+    "优惠群",
+    "会员群",
+    "招新群",
+    "粉丝群",
+    "薅毛小分队"
+  ],
+
+  "_ai_filter说明": "false = 只靠上面那份群名单过滤，AI 不再拦截任何消息。",
+  "ai_filter": false,
+
+  "_interval说明": "扫描间隔（秒）。300 = 5 分钟；越短越及时，但占资源也越多",
+  "interval_sec": 300,
+
+  "_push_mode说明": "instant=每条立即推；hourly=攼着每小时汇总一条；both=重点联系人立即推，其余每小时汇总",
+  "push_mode": "both",
+
+  "_my_wxid说明": "我自己的微信 wxid。留空会自动从数据目录名推断。",
+  "my_wxid": "wxid_YOUR_ACCOUNT",
+
+  "_private_alert说明": "盯私聊：对方发来消息后 N 分钟我没回，就响铃提醒。contacts 填昵称/备注名/wxid，支持模糊匹配。enabled=false 则关闭。",
+  "private_alert": {
+    "enabled": true,
+    "contacts": [
+      "wxid_xxxxxxxxxxxx",
+      "示例联系人A",
+      "wxid_xxxxxxxxxxxx",
+      "示例联系人B",
+      "wxid_xxxxxxxxxxxx",
+      "示例联系人C",
+      "wxid_xxxxxxxxxxxx",
+      "1.5",
+      "示例联系人D",
+      "wxid_xxxxxxxxxxxx",
+      "示例联系人E",
+      "maminghao4154",
+      "Mark",
+      "wxid_xxxxxxxxxxxx",
+      "李政坤",
+      "wxid_xxxxxxxxxxxx"
+    ],
+    "minutes": 5,
+    "_quiet_minutes说明": "提醒过一次后，这段时间内不再重复打扰（分钟）。沉默就算默认不回。",
+    "quiet_minutes": 30,
+    "_max_wait_hours说明": "对方发来超过这么久还没回，就不再提醒（小时）。防几个月前的老消息突然诈尸。",
+    "max_wait_hours": 12,
+    "_session_gap_hours说明": "两波对话之间隔多久算“断了”。超过它，前面那波就不再拖累后面那波。",
+    "session_gap_hours": 6
+  },
+
+  "_priority_contacts说明": "群里的重点人：他在这群人里说话，就单独立即推一条。填名字/wxid（模糊匹配）。",
+  "priority_contacts": [
+  ],
+
+  "_hourly_minutes说明": "汇总周期（分钟）。60 = 每小时一条",
+  "hourly_minutes": 60,
+
+  "_priority_sound说明": "重点消息标题加🔔，并尝试撞击大声提醒。",
+  "priority_sound": true,
+
+  "_initial说明": "第一次运行时，往回看多少小时的消息（之后只报新的）",
+  "initial_hours": 6,
+
+  "proxy": "http://127.0.0.1:7897",
+
+  "_use_ai说明": "要不要用 AI 把消息压成要点。true 的话下面必须填好",
+  "use_ai": true,
+  "ai": {
+    "_说明": "分两档：fast=便宜快，smart=更强但贵。同一个 key 可以调不同模型。",
+    "_task_tier说明": "什么活先用哪一档。summary/topic 是日常摘要，用 fast；analysis/writing 才上 smart。",
+    "task_tier": {
+      "summary": "fast",
+      "topic": "fast",
+      "analysis": "smart",
+      "writing": "smart"
+    },
+    "_allow_escalate说明": "true = fast 档全部失败时，自动升到 smart 档重试。",
+    "allow_escalate": true,
+    "providers": [
+      {
+        "name": "本地池·快",
+        "tier": "fast",
+        "base_url": "http://127.0.0.1:8788/v1",
+        "api_key": "local",
+        "model": "auto"
+      },
+      {
+        "name": "本地池·强",
+        "tier": "smart",
+        "base_url": "http://127.0.0.1:8788/v1",
+        "api_key": "local",
+        "model": "auto"
+      },
+      {
+        "name": "千问flash",
+        "tier": "fast",
+        "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "api_key": "YOUR_DASHSCOPE_API_KEY",
+        "model": "qwen3.8-flash"
+      },
+      {
+        "name": "DeepSeek",
+        "tier": "fast",
+        "base_url": "https://api.deepseek.com/v1",
+        "api_key": "YOUR_DEEPSEEK_API_KEY",
+        "model": "deepseek-chat"
+      },
+      {
+        "name": "千问max",
+        "tier": "smart",
+        "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "api_key": "YOUR_DASHSCOPE_API_KEY",
+        "model": "qwen3.8-max"
+      }
+    ]
+  }
+}

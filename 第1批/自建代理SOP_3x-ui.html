@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>自建代理 SOP｜3x-ui 单节点</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+  :root{
+    --ink:#1a1a1a; --sub:#5c5c5c; --line:#d8d3cd; --accent:#c0392b;
+    --wash:#faf8f6; --code:#f4f2ef;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    font-family:"Noto Serif SC","EB Garamond",serif;
+    color:var(--ink); font-size:10.5pt; line-height:1.75; margin:0;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1{ font-size:20pt; margin:0 0 4px; letter-spacing:.5px; font-weight:700; }
+  h2{
+    font-size:12.5pt; margin:22px 0 8px; padding-left:9px;
+    border-left:3px solid var(--accent); font-weight:700;
+  }
+  h3{ font-size:11pt; margin:14px 0 5px; font-weight:700; color:#222; }
+  p{ margin:6px 0; }
+  .lead{ color:var(--sub); font-size:10pt; margin-bottom:2px; }
+  .rule{ height:2px; background:var(--accent); width:56px; margin:10px 0 6px; }
+  .meta{ color:var(--sub); font-size:9pt; }
+  .src{
+    background:var(--wash); border:1px solid var(--line); border-radius:6px;
+    padding:10px 13px; margin:10px 0; font-size:9.5pt;
+  }
+  .src .url{ font-family:"JetBrains Mono",monospace; font-size:8.5pt; word-break:break-all; color:#8a3b30; }
+  blockquote{
+    margin:7px 0; padding:5px 12px; border-left:2px solid var(--line);
+    color:#333; background:#fcfbfa; font-size:9.5pt;
+  }
+  .note{
+    border:1px solid #e4cfcb; background:#fdf6f4; border-radius:6px;
+    padding:9px 13px; margin:10px 0; font-size:9.5pt;
+  }
+  .note b{ color:var(--accent); }
+  code{
+    font-family:"JetBrains Mono",monospace; font-size:9pt;
+    background:var(--code); padding:1px 4px; border-radius:3px;
+  }
+  pre{
+    font-family:"JetBrains Mono",monospace; font-size:8.8pt; line-height:1.6;
+    background:var(--code); border:1px solid var(--line); border-radius:5px;
+    padding:9px 11px; margin:7px 0; white-space:pre-wrap; word-break:break-all;
+  }
+  ul,ol{ margin:5px 0 5px 0; padding-left:20px; }
+  li{ margin:3px 0; }
+  table{ width:100%; border-collapse:collapse; margin:8px 0; font-size:9pt; }
+  th,td{ border:1px solid var(--line); padding:5px 8px; text-align:left; vertical-align:top; }
+  th{ background:#f3f0ec; font-weight:700; }
+  .tag{ font-size:8pt; color:#fff; background:var(--accent); padding:1px 6px; border-radius:3px; vertical-align:2px; }
+  .tag.gray{ background:#8b8b8b; }
+  footer{ margin-top:24px; border-top:1px solid var(--line); padding-top:8px; color:var(--sub); font-size:8.5pt; }
+</style>
+</head>
+<body>
+
+<h1>自建代理 SOP｜3x-ui 单节点</h1>
+<div class="rule"></div>
+<p class="lead">依据 @mjjwiki《手把手教大家搭建自己的VPN代理：每月只要2元》整理</p>
+<p class="meta">原文发布 2026-09-17 05:16 UTC（北京时间 13:16）　·　整理 2026-09-26</p>
+
+<h2>一、来源与证据</h2>
+<div class="src">
+  <div>原推：<span class="url">https://x.com/mjjwiki/status/2100453699659366890</span></div>
+  <div>作者：MJJ百科（@mjjwiki，蓝V，8,428 关注）；载体为 X 长文（Article），约 30 段、20 张截图</div>
+  <div>数据：约 92.8 万浏览 / 4,389 赞 / 751 转 / 7,200 收藏</div>
+</div>
+<p><b>原文原话（引用）：</b></p>
+<blockquote>「常见的NAT小鸡有uzuma、独角鲸、懒猫云，这里以独角鲸举例，地址是https://fuckip.me/zh。」</blockquote>
+<blockquote>「选择自营的新加坡NAT3号，选择每月0.30美元（大概是2元）的Basic套餐」</blockquote>
+<blockquote>「1CPU、128M内存、硬盘1G、网络峰值900M、流量1000G」</blockquote>
+<blockquote>「NAT小鸡全部代码在本帖子评论区，可以直接复制粘贴操作。」</blockquote>
+<blockquote>「其实，如果不是手头特别紧的话，我建议还是买正常的云服务器来搭建，最好是三网直连的，速度体验还是比较大的。」</blockquote>
+
+<h2>二、动手前先看三条 <span class="tag gray">我的判断，非原文</span></h2>
+<div class="note">
+  <b>1.「2元固定IP」要拆开看。</b> NAT 小鸡给的是<b>共享 IPv4</b>（通常另配独立 IPv6），出口 IP 多人共用。所谓「固定」指不变，但「比机场干净」取决于同段邻居有没有被滥用，这类机房段进黑名单的概率反而更高。
+</div>
+<div class="note">
+  <b>2.「养 AI 很好」这个理由站不住。</b> 注册/养 ChatGPT、Claude 这类账号，风控最警惕的正是机房 IP 段，数据中心 IP 常被直接判为代理。真正「干净」的是住宅 IP，0.30 美元给不了。这条卖点的说服力不如「便宜、自主可控」。
+</div>
+<div class="note">
+  <b>3. 你说的是「卡」，这台小鸡未必是解药。</b> NAT 共享带宽、且新加坡绕路，实测可能比你现在还慢。作者自己也在文末劝人上「三网直连」的云服务器。如果卡是主要痛点，先解决线路，再谈省钱。
+</div>
+
+<h2>三、一个重要出入：版本号</h2>
+<p>原文写「然后安装<b>V2.9.4版本</b>，因为我们这里是单节点VPN」。但 3x-ui 官方仓库最新发布为 <b>v3.8.5</b>（2026-09-16）。这个 V2.9.4 与我核对到的版本对不上，可能是作者当时的旧版或笔误。<span class="tag gray">下面给两种装法</span></p>
+
+<h2>四、三步流程</h2>
+
+<h3>Step 1　购买 NAT 小鸡 <span class="tag">原文</span></h3>
+<ul>
+  <li>平台：uzuma、独角鲸、懒猫云；以独角鲸为例，地址 <code>https://fuckip.me/zh</code>（原文原话）</li>
+  <li><b>先充值，但用多少充多少</b>。原文原话：「余额仅限用于平台服务消费，不支持提现或退款到原支付渠道。」</li>
+  <li>新建实例 → 地区选 <b>亚洲 · 新加坡</b>（原文理由：「新加坡很多人使用中文，养AI很好」）</li>
+  <li>选「自营的新加坡NAT3号」，套餐选 <b>Basic，0.30 美元/月</b>（约 2 元）</li>
+  <li>规格：1CPU / 128M 内存 / 1G 硬盘 / 峰值 900M / 流量 1000G（原文原话）</li>
+  <li>系统选 <b>Debian</b>，密码建议自定义（原文原话）</li>
+  <li><b>关键一步：</b>NAT 小鸡不开放常用端口，必须在控制台「<b>设置端口转发</b>」。记下你申请的<b>外部端口</b>，后面面板和节点两处都要用。</li>
+</ul>
+
+<h3>Step 2　安装 3x-ui <span class="tag gray">命令为官方脚本，非原文</span></h3>
+<p>原文说代码在评论区，我这边取不到评论，故改用 3x-ui 官方仓库的命令，已在此标明出处不同。</p>
+<p>进入 IDC 提供的 Web Shell（或任意 SSH 客户端）后：</p>
+<pre># 依赖（Debian 一般已装，保险起见）
+apt update &amp;&amp; apt install -y curl socat
+
+# 安装 3x-ui（官方最新版）
+bash &lt;(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
+
+# 若要按原文锁旧版本（示例，需确认该 tag 存在）
+bash &lt;(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) v2.9.4</pre>
+<ul>
+  <li>装完记下：<b>面板端口、随机路径、用户名、密码</b></li>
+  <li>面板端口要改成你在 Step 1 申请的<b>外部端口</b></li>
+  <li>在脚本菜单里设置<b>开机自启动</b>，然后<b>重启面板</b></li>
+  <li>后续再想进管理菜单，直接输入 <code>x-ui</code></li>
+</ul>
+
+<h3>Step 3　配置面板与节点 <span class="tag">原文步骤 + 常规操作</span></h3>
+<ul>
+  <li>浏览器打开 <code>http://&lt;你的IP&gt;:&lt;外部端口&gt;/&lt;面板路径&gt;</code> 登录</li>
+  <li>面板设置 → <b>修改 URL 根路径</b> → 保存并<b>重启面板</b>才生效（原文原话：「先修改面板URL根路径，重启面板才生效。」）</li>
+  <li>入站列表 → 添加入站（即节点）：协议可选 VLESS + Reality、VMess 等</li>
+  <li>生成节点链接 / 二维码</li>
+  <li>原文原话：「添加好节点后，就复制节点地址到我们的VPN客户端使用，记得修改端口为之前配置的外部端口。」</li>
+</ul>
+
+<h2>五、客户端侧</h2>
+<ul>
+  <li>Windows / macOS：v2rayN、v2rayNG（安卓）、Clash 系客户端皆可</li>
+  <li>导入节点链接或订阅，先测速再长期用</li>
+  <li>端口一律填<b>外部端口</b>，不是面板里看到的内部端口</li>
+</ul>
+
+<h2>六、坑点清单</h2>
+<table>
+  <tr><th style="width:16%">坑</th><th style="width:46%">说明</th><th>处理</th></tr>
+  <tr><td>端口</td><td>面板端口与节点端口都必须是转发过的外部端口，两者可不同但都要在转发表里</td><td>在 IDC 控制台逐条核对映射</td></tr>
+  <tr><td>内存</td><td>128M 跑面板偏紧，日志一涨就 OOM</td><td>关日志、少插件；频繁崩就升配置</td></tr>
+  <tr><td>退款</td><td>充值余额不可提现、不可退款</td><td>用多少充多少，别囤</td></tr>
+  <tr><td>IP 质量</td><td>共享 IP，可能因邻居滥用被拉黑</td><td>换实例或换机房</td></tr>
+  <tr><td>速度</td><td>NAT 共享带宽，绕路会卡</td><td>按作者建议优先三网直连</td></tr>
+  <tr><td>商家</td><td>小型 IDC 跑路、涨价、换段并不少见</td><td>只充短期，做好备份</td></tr>
+</table>
+
+<h2>七、下一步（需要你定）</h2>
+<ul>
+  <li>现在卡的是什么：现有<b>机场</b>，还是已有自建？卡在延迟、丢包还是高峰期降速？</li>
+  <li>要不要我陪你实操：你买好机器后，我按这份 SOP 带你一条条配到能连（你给面板地址，或按清单截图给我）。</li>
+  <li>如果你更在意速度而非省钱，我可以另出一份「三网直连 VPS 选线」的对比，方向与这台 0.3 刀的小鸡不同。</li>
+</ul>
+
+<footer>
+整理自 @mjjwiki 2026-09-17 长文，引用处均已标注「原文原话」；标注「我的判断」与「官方脚本」的部分为整理者补充，非原作者内容。3x-ui 版本信息核对自官方仓库（v3.8.5，2026-09-16 发布）。
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+﻿{
+  "_说明": "163 邮箱监控配置。填完保存即可，不用改代码。",
+
+  "imap_host": "imap.163.com",
+  "imap_port": 993,
+
+  "email": "you@example.com",
+  "_email说明": "你的完整邮箱地址。",
+
+  "auth_code_file": ".\\邮箱监控\\授权码.txt",
+  "_auth_code_file说明": "163 的「客户端授权码」存在这个文件里。脚本只读、不打印、不外传。",
+
+  "mailbox": "INBOX",
+
+  "_interval说明": "扫描间隔（秒）。300 = 5 分钟。163 的 IMAP 有频控，别低于 120。",
+  "interval_sec": 300,
+
+  "_initial_hours说明": "第一次运行时，往回看多少小时的邮件（之后只报新的）。",
+  "initial_hours": 6,
+
+  "_push_mode说明": "instant=命中关键词立即推；digest=每隔 digest_minutes 汇总一条；both=两者都要。",
+  "push_mode": "both",
+  "digest_minutes": 60,
+
+  "_ignore_senders说明": "发件人地址/名字含这些词的，整封不看（小写模糊匹配）。只放纯营销地址，别放兼发通知的地址。",
+  "ignore_senders": [
+    "bank.update@mail.za.group",
+    "promo@phillip.com.hk",
+    "promotion@phillip.com.hk",
+    "mkt@hk.fosunhns.com",
+    "do_not_reply@smailer1.binance.com",
+    "photos@onedrive.com"
+  ],
+
+  "_ignore_subject_keywords说明": "标题含这些词的，当营销忽略。用来补发件人黑名单的漏洞（同一个地址既发营销又发通知时）。",
+  "_note_辉立": "「Daily Combined Statement」是辉立日结单（含别人转发来的）。它已由 辉立结单.py 单独抓取解析，这里摘掉，避免两处重复打扰。致富的是「Combined Daily Statement」（词序不同），不在此列，仍会进汇总提示你。",
+  "ignore_subject_keywords": [
+    "Daily Combined Statement",
+    "回赠券", "回贈券", "加息券", "消费券", "消費券",
+    "现金奖赏", "現金獎賞", "瓜分", "免费领", "免費領",
+    "快人一步", "必看清单", "专属邀请", "邀友", "邀请好友",
+    "优惠券快将到期", "優惠券快將到期", "中秋", "礼品", "禮品",
+    "尽享", "尊享", "解锁高达"
+  ],
+
+  "_important_keywords说明": "标题或发件人命中这些词的，立即单推一条。",
+  "important_keywords": [
+    "认购新股结果", "認購新股結果", "中签", "中籤",
+    "登入通知", "登录提醒", "登錄提醒", "新设备", "新設備", "新 IP", "新IP",
+    "异常登录", "異地", "安全提醒", "安全代码", "验证码", "驗證碼",
+    "One Time Passcode", "密码", "密碼", "帐户恢复", "帳戶恢復",
+    "提现", "提現", "充值成功", "入账", "入賬", "扣除",
+    "成交单", "成交單", "買入指示", "买入指示",
+    "最后通知", "最後通知", "聲明提交", "声明提交", "账户关闭", "賬戶關閉",
+    "定期修改交易密码", "系统维护", "系統維護", "支付系统维护"
+  ],
+
+  "_use_ai说明": "要不要用 AI 把汇总压成要点。",
+  "use_ai": true,
+
+  "_ai_config_file说明": "AI 通道直接借用微信监控那份配置（不重复存密钥）。想独立配置，就在本文件里加一个 ai 块，会优先用它。",
+  "ai_config_file": ".\微信监控\\微信监控配置.json"
+}

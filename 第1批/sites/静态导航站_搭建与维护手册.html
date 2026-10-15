@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>静态导航站 · 搭建与维护手册</title>
+<style>
+  :root{ --ink:#1e1c18; --muted:#6f6a62; --line:#e3ded5; --accent:#2f6b57; --accent-soft:#eaf2ee; --bg:#f6f5f2; --gold:#a8701f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.8;
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+  .page{max-width:780px;margin:0 auto;padding:52px 44px 64px;background:var(--bg);}
+  h1{font-family:"Noto Serif SC",Georgia,serif;font-size:27px;margin:0 0 8px;letter-spacing:.5px;}
+  .sub{color:var(--muted);font-size:13.5px;margin:0;}
+  .rule{height:3px;width:56px;background:var(--accent);border-radius:2px;margin:18px 0 4px;}
+  h2{font-size:16px;margin:32px 0 10px;padding-left:11px;border-left:4px solid var(--accent);}
+  h3{font-size:14px;margin:18px 0 6px;color:var(--ink);}
+  p,li{font-size:13.8px;}
+  ol,ul{padding-left:22px;margin:6px 0;}
+  li{margin:5px 0;}
+  code{background:var(--accent-soft);color:var(--accent);border-radius:5px;padding:1px 6px;font-size:12.5px;font-family:ui-monospace,Consolas,monospace;}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px;}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top;}
+  th{background:#fff;font-weight:600;}
+  td code{white-space:nowrap;}
+  .box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 18px;margin:10px 0;font-size:13.5px;}
+  .box.tip{background:#fbfaf6;border-color:#ece5d6;}
+  .muted{color:var(--muted);font-size:12.5px;}
+  .step{border-left:3px solid var(--accent-soft);padding-left:12px;margin:10px 0;}
+  footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>静态导航站 · 搭建与维护手册</h1>
+  <p class="sub">一套可复用的做法：一个文件夹 = 一个网站。做几个站，就用几遍。</p>
+  <div class="rule"></div>
+
+  <h2>0 · 这套东西是什么</h2>
+  <p>一个「单文件网站」：所有内容都存在一个 <code>index.html</code> 里，双击就能在浏览器打开看效果；上传到 Cloudflare 就变成一个别人能访问的网址。<b>改内容只改一处，排版不会坏。</b></p>
+
+  <h2>1 · 文件结构（多站约定）</h2>
+  <div class="box">
+<pre style="margin:0;font-size:12.5px;line-height:1.7;">sites\
+  港卡导航\index.html        ← 第 1 个站
+  网站二\index.html          ← 第 2 个站
+  网站三\index.html          ← 第 3 个站</pre>
+  </div>
+  <p>一条纪律：<b>一个网站 = 一个文件夹 = Cloudflare 上一个项目</b>。文件夹里必须有 <code>index.html</code>（小写）。</p>
+
+  <h2>2 · 内容怎么改（核心）</h2>
+  <p>打开 <code>index.html</code>，找到注释 <code>① 数据区：你只需要改这里</code>，在 <code>const SITE = { … }</code> 里编辑。字段说明：</p>
+  <table>
+    <tr><th>字段</th><th>作用</th><th>示例</th></tr>
+    <tr><td><code>title</code></td><td>网站大标题</td><td>港卡 · 券商 · Web3 服务导航</td></tr>
+    <tr><td><code>subtitle</code></td><td>标题下的一句话</td><td>一张地图，理清开户、羊毛与出金</td></tr>
+    <tr><td><code>banner</code></td><td>顶部提示条（留空则不显示）</td><td>示例内容，请替换</td></tr>
+    <tr><td><code>notice</code> / <code>updated</code></td><td>页脚说明与「更新于」</td><td>以官方页面为准 · 2026-10-08</td></tr>
+    <tr><td><code>categories[]</code></td><td>板块数组，每个含 <code>name</code> 和 <code>items[]</code></td><td>港卡与境外银行</td></tr>
+    <tr><td><code>items[].name</code></td><td>服务名（卡片标题）</td><td>众安银行</td></tr>
+    <tr><td><code>items[].region</code></td><td>地区角标</td><td>香港</td></tr>
+    <tr><td><code>items[].amount</code></td><td>福利小计（金色标签，留空则不显示）</td><td>最高 2000 港币</td></tr>
+    <tr><td><code>items[].channel</code></td><td>开户渠道 / 要求</td><td>门槛开户，参加新人奖励活动</td></tr>
+    <tr><td><code>items[].condition</code></td><td>完成条件</td><td>入金 1 万港币以上</td></tr>
+    <tr><td><code>items[].advantage</code></td><td>主要优势</td><td>下卡率高、福利多</td></tr>
+    <tr><td><code>items[].code</code></td><td>邀请码（点击可复制，留空则不显示）</td><td>你的邀请码</td></tr>
+    <tr><td><code>items[].note</code></td><td>备注 / 教程（默认折叠）</td><td>港区 App Store 搜索「ZA Bank」</td></tr>
+    <tr><td><code>items[].links[]</code></td><td>链接按钮：<code>{label,url}</code></td><td>{label:"官网", url:"https://…"}</td></tr>
+  </table>
+  <div class="box tip"><b>加一个服务：</b>复制一段 <code>{ … }</code>，改字段即可。<b>加一个板块：</b>往 <code>categories</code> 里照抄一段。</div>
+
+  <h2>3 · 上线（Cloudflare Pages）</h2>
+  <div class="step">
+    <ol>
+      <li>用你自己的浏览器打开 <code>https://dash.cloudflare.com/sign-up</code>，邮箱注册并完成邮箱验证。</li>
+      <li>左侧 <b>Workers &amp; Pages → Create → Pages → Upload assets</b>。</li>
+      <li>项目名填英文小写，如 <code>hk-nav</code>（网址将是 <code>hk-nav.pages.dev</code>）。</li>
+      <li>把该站文件夹（或它的 zip）拖进去 → <b>Deploy</b>。</li>
+      <li>拿到网址，别人打开就能看。</li>
+    </ol>
+  </div>
+  <p class="muted">注：Cloudflare 现在也提供新的「Upload your static files」流程（Workers 静态资源），网址形如 <code>名字.账号.workers.dev</code>。两种都能用，按顺手的来。</p>
+
+  <h2>4 · 维护（改完怎么发布）</h2>
+  <ol>
+    <li>改 <code>index.html</code> 的数据区 → 保存。</li>
+    <li>回 Cloudflare 对应项目 → <b>Create new deployment</b> → 重新拖文件夹覆盖。</li>
+    <li>几秒后线上更新。</li>
+  </ol>
+  <p class="muted">（进阶）把文件夹放进 GitHub，改完自动部署，省掉手动拖。需要时再配。</p>
+
+  <h2>5 · 多个站怎么管</h2>
+  <ul>
+    <li>每个站建一个 Cloudflare 项目，互不干扰；免费账号可建很多个。</li>
+    <li>想统一品牌：买 <b>一个域名</b>，把各站挂成子域名：<code>站一.你的域名.com</code>、<code>站二.你的域名.com</code>…（一个域名罩住全部）。</li>
+    <li>域名在境外注册商买（Cloudflare Registrar / Namecheap / Porkbun），避免国内备案。</li>
+  </ul>
+
+  <h2>6 · 想让「只有指定的人能看」（可选）</h2>
+  <p>静态站本身没有登录。用 <b>Cloudflare Zero Trust → Access → Applications → Add（Self-hosted）</b>，绑定站点域名，策略设为<b>白名单邮箱</b>：只有列进去的邮箱收到验证码才能进。免费额度够个人用。</p>
+
+  <h2>7 · 常见坑</h2>
+  <ul>
+    <li>文件名必须 <code>index.html</code>（小写），否则打开是目录或 404。</li>
+    <li>别放国内服务器 / 国内域名，会撞 ICP 备案；Cloudflare 是境外的，绕开。</li>
+    <li><code>pages.dev</code> 在国内访问不稳。<b>观众主要在海外/港澳 → 没问题；主要在大陆 → 另选方案</b>（香港主机 + 自有域名）。</li>
+    <li>信息会过期，定期核对；页脚「更新于」记得改。</li>
+  </ul>
+
+  <h2>8 · 上线前检查清单</h2>
+  <ul>
+    <li>□ 站点文件夹里有 <code>index.html</code></li>
+    <li>□ 标题、副标、页脚已改成本站内容</li>
+    <li>□ 邀请码 / 链接已换成本人链接，无他人返佣码</li>
+    <li>□ 本地双击打开，卡片、搜索、分类都正常</li>
+    <li>□ Cloudflare 账号邮箱已验证</li>
+    <li>□ 已 Deploy，打开网址能看到内容</li>
+  </ul>
+
+  <footer>配套文件：站点模板 <code>sites\港卡导航\index.html</code> · 部署清单 <code>sites\Cloudflare_Pages_操作清单.pdf</code></footer>
+</div>
+</body>
+</html>

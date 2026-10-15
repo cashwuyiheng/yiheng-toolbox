@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>港卡 · 券商 · Web3 服务导航</title>
+<style>
+  :root{
+    --bg:#f5f4f1; --card:#ffffff; --ink:#1e1c18; --muted:#726c63;
+    --line:#e7e3dc; --accent:#2f6b57; --accent-soft:#e9f2ee;
+    --gold:#a8701f; --gold-soft:#fbf3e2; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); line-height:1.6;
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px}
+
+  /* 顶部 */
+  header.top{padding:46px 0 8px; text-align:center}
+  h1.title{font-family:"Noto Serif SC",Georgia,"Songti SC",serif; font-size:30px; margin:0 0 10px; letter-spacing:.5px; font-weight:700}
+  .sub{color:var(--muted); font-size:14px; margin:0}
+  .searchbar{margin:24px auto 0; max-width:520px; position:relative}
+  .searchbar input{
+    width:100%; padding:12px 18px 12px 44px; border:1px solid var(--line);
+    border-radius:999px; background:#fff; font-size:15px; color:var(--ink); outline:none;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .searchbar input:focus{border-color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft)}
+  .searchbar svg{position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--muted)}
+
+  .banner{
+    max-width:760px; margin:20px auto 0; background:#fffaf0; border:1px solid #f0e2c8;
+    color:#7a5a1c; border-radius:12px; padding:10px 16px; font-size:13px; text-align:center;
+  }
+
+  /* 分类筛选 */
+  .chips{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:22px 0 4px}
+  .chip{
+    border:1px solid var(--line); background:#fff; color:var(--muted);
+    padding:6px 15px; border-radius:999px; font-size:13px; cursor:pointer;
+    transition:all .18s; user-select:none;
+  }
+  .chip:hover{color:var(--ink)}
+  .chip.active{background:var(--accent); color:#fff; border-color:var(--accent)}
+
+  /* 分类区块 */
+  section.cat{margin:30px 0 8px}
+  .cat-title{display:flex; align-items:center; gap:10px; font-size:15.5px; font-weight:600; margin:0 0 14px}
+  .cat-title::before{content:""; width:4px; height:17px; background:var(--accent); border-radius:2px}
+  .cat-title .count{color:var(--muted); font-weight:400; font-size:13px}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px}
+
+  /* 卡片 */
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 16px 14px; display:flex; flex-direction:column; gap:9px;
+    transition:box-shadow .2s, transform .2s, border-color .2s;
+  }
+  .card:hover{box-shadow:0 10px 26px -14px rgba(0,0,0,.20); border-color:#ddd8cf}
+  .card .head{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .card h3{margin:0; font-size:16.5px}
+  .badge{font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:6px; padding:1px 7px; font-weight:400}
+  .amount{align-self:flex-start; font-size:12.5px; color:var(--gold); background:var(--gold-soft); border-radius:8px; padding:3px 9px; font-weight:600}
+  .row{font-size:13px; color:#3a3630}
+  .row .k{color:var(--muted); font-weight:500; margin-right:5px}
+  .code{
+    display:inline-flex; align-items:center; gap:6px; background:var(--accent-soft);
+    color:var(--accent); border-radius:8px; padding:3px 9px; font-size:12.5px;
+    cursor:pointer; font-family:ui-monospace,"JetBrains Mono",Consolas,monospace;
+    border:1px solid transparent; transition:border-color .15s;
+  }
+  .code:hover{border-color:var(--accent)}
+  .links{display:flex; gap:8px; flex-wrap:wrap; margin-top:1px}
+  .links a{
+    font-size:12.5px; color:var(--accent); text-decoration:none;
+    border:1px solid var(--accent-soft); padding:3px 11px; border-radius:8px; transition:background .15s;
+  }
+  .links a:hover{background:var(--accent-soft)}
+  details.note{font-size:12.5px; color:var(--muted)}
+  details.note summary{cursor:pointer; outline:none; list-style:none}
+  details.note summary::-webkit-details-marker{display:none}
+  details.note summary::before{content:"› "; color:var(--accent); font-weight:700}
+  details.note[open] summary::before{content:"⌄ "}
+  details.note p{margin:6px 0 0; padding-left:12px}
+
+  .empty{text-align:center; color:var(--muted); padding:60px 0; font-size:14px}
+
+  footer{padding:34px 0 56px; text-align:center; color:var(--muted); font-size:12.5px; border-top:1px solid var(--line); margin-top:36px}
+  footer .dot{margin:0 8px; opacity:.5}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1 class="title" id="siteTitle">港卡 · 券商 · Web3 服务导航</h1>
+      <p class="sub" id="siteSub">一张地图，理清开户、羊毛与出金</p>
+      <div class="searchbar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input id="search" type="text" placeholder="搜索服务、地区、优势…">
+      </div>
+    </header>
+
+    <div class="banner" id="banner">下面为示例内容，用来展示版式。把你的名称、邀请码、链接替换进去即可。</div>
+
+    <div class="chips" id="chips"></div>
+    <main id="main"></main>
+
+    <footer id="footer"></footer>
+  </div>
+
+<script>
+/* =========================================================
+   ① 数据区：你只需要改这里
+   ---------------------------------------------------------
+   每个服务是一个 {} ，字段说明：
+     name      服务名
+     region    地区（角标）
+     amount    福利小计，卡片上那行金色标签（可留空 ""）
+     channel   开户渠道 / 要求 / 邀请码说明
+     condition 完成条件
+     advantage 主要优势
+     code      邀请码（可留空 ""）
+     note      备注 / 教程说明（可留空 ""）
+     links     链接，逗号分隔，格式 {label:"按钮文字", url:"网址"}
+   ========================================================= */
+const SITE = {
+  title: "港卡 · 券商 · Web3 服务导航",
+  subtitle: "一张地图，理清开户、羊毛与出金",
+  banner: "下面为示例内容，用来展示版式。把你的名称、邀请码、链接替换进去即可。",
+  notice: "各平台活动可能随时有变，请以平台官方页面为准。",
+  updated: "更新于 2026-10-08",
+
+  categories: [
+    {
+      name: "香港电话卡",
+      items: [
+        {
+          name: "游惠宝香港电话卡",
+          region: "示例",
+          amount: "",
+          channel: "填写邀请码即可",
+          condition: "月租约 30.8 元，可用一年",
+          advantage: "能保号、能选号、能收短信、能上外网，所有手机通用，不用折腾 eSIM",
+          code: "你的邀请码",
+          note: "扫小程序码，或搜小程序「游惠宝」。",
+          links: [ {label:"官网", url:"#"} ]
+        }
+      ]
+    },
+    {
+      name: "交易所与钱包",
+      items: [
+        {
+          name: "币安交易所",
+          region: "示例",
+          amount: "最高约 100 USDT",
+          channel: "门槛开户：完成身份认证 + 首次入金 + 首笔交易",
+          condition: "认证返 20 USDT 券；入金 ≥10 美元返 30 USDT；首笔交易 ≥10 美元返 50 USDT",
+          advantage: "全球最大加密交易所，交易深度与流动性最好",
+          code: "你的邀请码",
+          note: "港区 App Store 搜索「Binance」。",
+          links: [ {label:"官网", url:"#"}, {label:"App Store", url:"#"} ]
+        },
+        {
+          name: "币安钱包",
+          region: "示例",
+          amount: "不定期活动",
+          channel: "绑定邀请码即可",
+          condition: "随时可参加不定期活动",
+          advantage: "撸空投项目较多，撸毛党常用",
+          code: "你的邀请码",
+          note: "",
+          links: [ {label:"官网", url:"#"} ]
+        }
+      ]
+    },
+    {
+      name: "港卡与境外银行",
+      items: [
+        {
+          name: "众安银行",
+          region: "香港",
+          amount: "最高 2000 港币",
+          channel: "门槛开户，参加新人奖励活动",
+          condition: "首笔入金 1–3 万港币以上，买入股票或基金",
+          advantage: "轻松秒过、下卡率高；福利多、加密友好，适合日常消费",
+          code: "",
+          note: "港区 App Store 搜索「ZA Bank」。",
+          links: [ {label:"官网", url:"#"}, {label:"App Store", url:"#"} ]
+        },
+        {
+          name: "平安数字银行",
+          region: "香港",
+          amount: "最高 1479 港币",
+          channel: "门槛开户，新人 18% 年化定期（一个月）",
+          condition: "定存一个月，最高可存 10 万港币",
+          advantage: "定存息率天花板，适合大额短期存储套利",
+          code: "",
+          note: "港区 App Store 搜索「平安数字银行」。",
+          links: [ {label:"官网", url:"#"} ]
+        },
+        {
+          name: "香港汇丰",
+          region: "香港 / 内地见证",
+          amount: "",
+          channel: "门槛开户；存入 1 万港币免 100/月管理费",
+          condition: "存入 5 万以上港币并按条款维持，享最高奖赏钱",
+          advantage: "全球网络最强（100 国家网点、环球账户统一管理），适合跨境消费",
+          code: "",
+          note: "港区 App Store 搜索「HSBC」。",
+          links: [ {label:"官网", url:"#"} ]
+        },
+        {
+          name: "中银香港",
+          region: "香港",
+          amount: "",
+          channel: "门槛开户，暂无新人活动",
+          condition: "",
+          advantage: "中银快汇与内地中行同名互转免费、实时到账，跨境转账最强",
+          code: "",
+          note: "港区 App Store 搜索「BOCHK」。",
+          links: [ {label:"官网", url:"#"} ]
+        }
+      ]
+    },
+    {
+      name: "香港券商",
+      items: [
+        {
+          name: "辉立证券（香港）",
+          region: "示例",
+          amount: "约 28000 优惠券",
+          channel: "入金 1 万港币开户",
+          condition: "入金 1 万港币即可",
+          advantage: "群友用得最多，融资打新申购 1 万以内免手续费",
+          code: "",
+          note: "港区 App Store 搜索「辉立香港」。",
+          links: [ {label:"官网", url:"#"} ]
+        },
+        {
+          name: "致富证券（香港）",
+          region: "示例",
+          amount: "最高 8800，轻松拿 388–888",
+          channel: "门槛开户，成功即赠 100 港币的 SpaceX 股票",
+          condition: "入金 1 万港币、留存 1 个月，并完成 10 笔以上股票或基金交易",
+          advantage: "开户快、羊毛多",
+          code: "",
+          note: "港区 App Store 搜索「致富证券」。",
+          links: [ {label:"官网", url:"#"} ]
+        },
+        {
+          name: "老虎证券（香港）",
+          region: "示例",
+          amount: "最高 2588，轻松拿 300",
+          channel: "入金 1 万送 SpaceX 股票；入金 10 万再拿 300 港币现金券",
+          condition: "入金 1 万港币、留存 2 个月，并完成 10 笔以上指定交易",
+          advantage: "老牌券商，可参与美股打新",
+          code: "你的邀请码",
+          note: "需提前报手机号报备。港区 App Store 搜索「Tiger Trade」。",
+          links: [ {label:"官网", url:"#"}, {label:"App Store", url:"#"} ]
+        }
+      ]
+    },
+    {
+      name: "美国 / 新加坡券商",
+      items: [
+        {
+          name: "必贝证券（美国 · 免 CRS）",
+          region: "美国",
+          amount: "最高 400U，基础版 20U",
+          channel: "不用入金即可开户",
+          condition: "入金 2000U 以上，留存 60 天",
+          advantage: "免 CRS，0 佣金，无最低存款要求，支持碎股与 IPO 打新",
+          code: "",
+          note: "港区 App Store 搜索「BBAE」。",
+          links: [ {label:"官网", url:"#"} ]
+        },
+        {
+          name: "第一证券（美国 · 免 CRS）",
+          region: "美国",
+          amount: "",
+          channel: "免 CRS，老牌华人券商",
+          condition: "",
+          advantage: "股票、期权 0 佣金，省钱第一名",
+          code: "",
+          note: "港区 App Store 搜索「First Trade」。",
+          links: [ {label:"官网", url:"#"} ]
+        }
+      ]
+    }
+  ]
+};
+
+/* =========================================================
+   ② 渲染逻辑：一般不用动
+   ========================================================= */
+const $ = s => document.querySelector(s);
+let activeCat = "全部";
+
+function esc(s){ return (s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function chipNames(){ return ["全部", ...SITE.categories.map(c => c.name)]; }
+
+function renderChips(){
+  $("#chips").innerHTML = chipNames().map(n =>
+    `<span class="chip${n===activeCat?' active':''}" data-cat="${esc(n)}">${esc(n)}</span>`
+  ).join("");
+  document.querySelectorAll(".chip").forEach(el => {
+    el.onclick = () => { activeCat = el.dataset.cat; renderChips(); render(); };
+  });
+}
+
+function cardHTML(it){
+  const links = (it.links||[]).map(l =>
+    `<a href="${esc(l.url||'#')}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("");
+  return `
+    <article class="card">
+      <div class="head">
+        <h3>${esc(it.name)}</h3>
+        ${it.region ? `<span class="badge">${esc(it.region)}</span>` : ""}
+      </div>
+      ${it.amount ? `<span class="amount">福利小计 · ${esc(it.amount)}</span>` : ""}
+      ${it.channel ? `<div class="row"><span class="k">开户</span>${esc(it.channel)}</div>` : ""}
+      ${it.condition ? `<div class="row"><span class="k">条件</span>${esc(it.condition)}</div>` : ""}
+      ${it.advantage ? `<div class="row"><span class="k">优势</span>${esc(it.advantage)}</div>` : ""}
+      ${it.code ? `<span class="code" data-code="${esc(it.code)}" title="点击复制">邀请码 ${esc(it.code)}</span>` : ""}
+      ${links ? `<div class="links">${links}</div>` : ""}
+      ${it.note ? `<details class="note"><summary>备注</summary><p>${esc(it.note)}</p></details>` : ""}
+    </article>`;
+}
+
+function render(){
+  const q = ($("#search").value || "").trim().toLowerCase();
+  let html = "", total = 0;
+
+  SITE.categories.forEach(cat => {
+    if (activeCat !== "全部" && activeCat !== cat.name) return;
+    const items = cat.items.filter(it => {
+      if (!q) return true;
+      const blob = [it.name,it.region,it.channel,it.condition,it.advantage,it.note,it.code].join(" ").toLowerCase();
+      return blob.includes(q);
+    });
+    if (!items.length) return;
+    total += items.length;
+    html += `<section class="cat">
+      <h2 class="cat-title">${esc(cat.name)}<span class="count">${items.length}</span></h2>
+      <div class="grid">${items.map(cardHTML).join("")}</div>
+    </section>`;
+  });
+
+  $("#main").innerHTML = html || `<div class="empty">没有匹配的结果，换个关键词试试。</div>`;
+
+  document.querySelectorAll(".code").forEach(el => {
+    el.onclick = () => {
+      const t = el.dataset.code;
+      navigator.clipboard && navigator.clipboard.writeText(t);
+      const old = el.textContent;
+      el.textContent = "已复制";
+      setTimeout(() => el.textContent = old, 900);
+    };
+  });
+}
+
+// 初始化
+$("#siteTitle").textContent = SITE.title;
+$("#siteSub").textContent = SITE.subtitle;
+$("#banner").textContent = SITE.banner;
+$("#banner").style.display = SITE.banner ? "" : "none";
+$("#footer").innerHTML = `${esc(SITE.notice)}<span class="dot">·</span>${esc(SITE.updated)}`;
+$("#search").oninput = render;
+renderChips();
+render();
+</script>
+</body>
+</html>
