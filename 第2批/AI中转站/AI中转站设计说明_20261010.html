@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>AI 中转站 · 设计说明</title>
+<style>
+:root{--navy:#003366;--orange:#FF6600;--ink:#1c2530;--muted:#5b6672;--line:#e2e7ee;--bg:#f7f9fc}
+*{box-sizing:border-box}
+body{font-family:"Noto Serif SC","Source Han Serif SC",Georgia,serif;color:var(--ink);background:#fff;margin:0;line-height:1.8}
+.wrap{max-width:840px;margin:0 auto;padding:46px 40px 60px}
+.kicker{color:var(--orange);font-size:13px;letter-spacing:.2em;font-weight:700}
+h1{color:var(--navy);font-size:28px;margin:8px 0 6px}
+.meta{color:var(--muted);font-size:13px;border-bottom:2px solid var(--navy);padding-bottom:16px;margin-bottom:24px}
+h2{color:var(--navy);font-size:18px;margin:30px 0 10px;padding-left:11px;border-left:5px solid var(--orange)}
+code{background:#eef3f9;color:#12395f;padding:1px 5px;border-radius:4px;font-family:Consolas,monospace;font-size:13px}
+pre{background:#0e2233;color:#dfe9f3;padding:14px 16px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.5;white-space:pre}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.8px}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--navy);color:#fff}
+tr:nth-child(even) td{background:var(--bg)}
+ol,ul{padding-left:22px}
+.foot{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+</style></head><body><div class="wrap">
+<div class="kicker">本地优先 · 多模型中转</div>
+<h1>AI 中转站 · 设计说明</h1>
+<div class="meta">日期：2026-10-10　｜　位置：.\AI中转站\　｜　纯标准库，零依赖</div>
+
+<h2>一、它是什么</h2>
+<p>在本机起一个 OpenAI 风格的网关（默认 <code>http://127.0.0.1:8788/v1</code>）。你的聊天客户端、脚本、编辑器插件都指向它，由它决定这条请求去哪家上游模型。</p>
+<p>解决三个实际问题：</p>
+<ol>
+<li><b>换模型不用改客户端</b>。客户端永远写 <code>127.0.0.1:8788</code>，后台换谁由这里决定。</li>
+<li><b>key 集中管理</b>。上游 key 只存在这一个本地文件里，客户端不碰。</li>
+<li><b>数据可控</b>。中转站自身不落你的 prompt（日志只记「路由到谁」）。</li>
+</ol>
+
+<h2>二、架构</h2>
+<pre>客户端(聊天/脚本/IDE)
+        │  OpenAI 格式请求，base_url = 127.0.0.1:8788/v1
+        ▼
+┌──────────────────────────────┐
+│  ai_relay.py（本机，127.0.0.1）│
+│  ① 鉴权(可选 relay_token)      │
+│  ② 路由：显式名 / 上游名/模型 / │
+│          关键字 / 默认          │
+│  ③ 转发 + 流式透传             │
+└──────────────────────────────┘
+        │  只转发到你自己配置的上游
+   ┌────┴─────┬─────────┐
+   ▼          ▼         ▼
+ qwen      deepseek   其他兼容 OpenAI 的端点</pre>
+
+<h2>三、快速开始</h2>
+<pre># 1. 填配置
+copy config.example.json config.json
+#    编辑 config.json：填每个上游的 base_url、api_key、model
+
+# 2. 启动
+python ai_relay.py
+
+# 3. 客户端 base_url 指向
+http://127.0.0.1:8788/v1</pre>
+<p>看活着没：打开 <code>http://127.0.0.1:8788/healthz</code>，或 <code>GET /v1/models</code> 列上游。</p>
+
+<h2>四、配置说明（config.json）</h2>
+<table>
+<tr><th>键</th><th>含义</th></tr>
+<tr><td>listen_host / listen_port</td><td>监听地址与端口，默认 127.0.0.1:8788（只对本机开放）</td></tr>
+<tr><td>relay_token</td><td>本地鉴权口令；填了之后客户端要带 Authorization: Bearer &lt;口令&gt;。留空则不校验</td></tr>
+<tr><td>default_upstream</td><td>兜底走哪个上游</td></tr>
+<tr><td>log_path</td><td>日志文件；留空则只打印不落盘</td></tr>
+<tr><td>upstreams[]</td><td>上游列表：name / base_url / api_key / model / timeout / proxy</td></tr>
+<tr><td>upstreams[].proxy</td><td>该上游单独走代理，如 http://127.0.0.1:7897；留空走直连</td></tr>
+<tr><td>routes[]</td><td>路由规则：match.keywords（命中最后一条 user 消息）或 match.model_prefix</td></tr>
+</table>
+
+<h2>五、路由规则</h2>
+<p>按顺序判断，命中即用：</p>
+<ol>
+<li>客户端 model 写成 <code>上游名/真实模型</code> → 用该上游，并覆盖模型名。</li>
+<li>客户端 model 写成 <code>上游名</code> → 用该上游。</li>
+<li>model 为 <code>auto</code> 或空 → 按 routes 关键字 / 前缀匹配，命中就用规则里的上游。</li>
+<li>都没命中 → default_upstream，再退到第一个上游。</li>
+</ol>
+
+<h2>六、安全边界</h2>
+<ul>
+<li><b>只听 127.0.0.1</b>，不对外网开放；同机程序才能访问。</li>
+<li><b>不改写你的数据</b>，转发后即走即弃，不缓存对话。</li>
+<li><b>日志不记内容</b>，只记「时间 + 路由到哪个上游 + 模型 + 是否流式」。</li>
+<li><b>proxy 按上游单独开</b>，避免给国内端点白白套梯子。</li>
+<li>想再紧一层：填 relay_token，客户端带口令才放行。</li>
+</ul>
+
+<h2>七、自测结果（端到端，不联网）</h2>
+<table>
+<tr><th>用例</th><th>期望</th><th>实测</th></tr>
+<tr><td>auto 无关键字</td><td>qwen/qwen-plus</td><td>✅</td></tr>
+<tr><td>含"写文章"</td><td>deepseek/deepseek-chat</td><td>✅</td></tr>
+<tr><td>显式 qwen</td><td>qwen/qwen-plus</td><td>✅</td></tr>
+<tr><td>deepseek/deepseek-reasoner</td><td>deepseek/deepseek-reasoner</td><td>✅</td></tr>
+<tr><td>/healthz</td><td>status=ok</td><td>✅</td></tr>
+</table>
+<p>自测脚本：<code>_调试脚本/test_relay.py</code>（起两个假上游，不动真上游、不联网）。</p>
+
+<h2>八、下一步可以加</h2>
+<ul>
+<li>用量统计与成本核算（每个上游各自计 token）</li>
+<li>失败自动换备用上游（和推特监控的失败告警一个思路）</li>
+<li>更细的路由：按 token 长度、按时间段、按调用方</li>
+<li>接进现有推送通道，出错时推一条</li>
+</ul>
+
+<div class="foot">Hanako 整理 · 2026-10-10 · ai_relay.py 与自测脚本均已落盘，可直接运行。</div>
+</div></body></html>

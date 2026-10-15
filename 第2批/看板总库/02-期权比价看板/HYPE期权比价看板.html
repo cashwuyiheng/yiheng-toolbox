@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HYPE 期权跨所比价 · 看板</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1c1f23;--sub:#6b7280;--line:#e6e8ec;
+      --pos:#128a5b;--neg:#c0392b;--accent:#2f5bea;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);
+     font:15px/1.55 "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;}
+.wrap{max-width:1180px;margin:0 auto;padding:26px 20px 60px;}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+h1{font-size:23px;margin:0 0 6px;letter-spacing:.3px;}
+.meta{color:var(--sub);font-size:13.5px;}
+#upd{background:var(--accent);color:#fff;border:0;border-radius:10px;
+     padding:11px 22px;font-size:15px;font-weight:600;cursor:pointer;
+     box-shadow:0 2px 8px rgba(47,91,234,.25);white-space:nowrap;}
+#upd:hover{filter:brightness(1.06);}
+#upd:disabled{opacity:.6;cursor:default;}
+.msg{margin:14px 0 0;font-size:13.5px;min-height:20px;color:var(--sub);}
+.msg.ok{color:var(--pos);}
+.msg.warn{color:#a8620a;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0 24px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 17px;}
+.card .k{color:var(--sub);font-size:12.5px;margin-bottom:7px;}
+.card .v{font-size:22px;font-weight:650;letter-spacing:.3px;}
+.pill{display:inline-block;padding:1px 9px;border-radius:20px;font-size:15px;}
+.pos-pill{background:#e6f6ee;color:var(--pos);}
+.zero-pill{background:#f1f2f4;color:var(--sub);}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:22px;}
+.panel h2{font-size:15px;margin:0;padding:13px 18px;border-bottom:1px solid var(--line);font-weight:600;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
+th{background:#fafbfc;color:var(--sub);font-weight:600;text-align:left;position:sticky;top:0;cursor:pointer;user-select:none;}
+th:hover{color:var(--accent);}
+td.c{text-align:center;}
+td.n{text-align:right;font-variant-numeric:tabular-nums;}
+td.strong{font-weight:700;}
+tr.pos td.strong{color:var(--pos);}
+tr.neg td.strong{color:var(--neg);}
+tr:hover td{background:#fafcff;}
+td.empty{text-align:center;color:var(--sub);padding:26px;}
+.vt th,.vt td{font-size:13px;}
+.yes{color:var(--pos);font-weight:600;}
+.no{color:var(--sub);}
+.note{margin-top:6px;background:#fffdf3;border:1px solid #f0e6c0;border-radius:12px;
+      padding:15px 18px;font-size:13.5px;color:#5c4b17;}
+.note b{color:#3f3305;}
+.note ul{margin:8px 0 0;padding-left:18px;}
+footer{margin-top:24px;color:var(--sub);font-size:12.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>HYPE 期权 · 跨所比价看板</h1>
+      <div class="meta">数据时间：<span id="when">—</span>　|　指数价：<span id="idx">—</span> USDT</div>
+    </div>
+    <button id="upd">更新数据</button>
+  </div>
+  <div class="msg" id="msg"></div>
+
+  <div class="cards">
+    <div class="card"><div class="k">可比合约（同到期·同行权价·同类型）</div><div class="v" id="npair">—</div></div>
+    <div class="card"><div class="k">扣费后净价差为正</div><div class="v" id="nhit">—</div></div>
+    <div class="card"><div class="k">当前最佳净价差</div><div class="v" id="best">—</div></div>
+    <div class="card"><div class="k">单张双所手续费</div><div class="v">≈ 0.066</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>市场覆盖（谁上架了 HYPE 期权）</h2>
+    <table class="vt">
+      <thead><tr><th>交易所</th><th>域名</th><th>是否有该品种</th><th>接入状态</th><th>说明</th></tr></thead>
+      <tbody>
+<tr><td>Gate</td><td>gate.io</td><td class="yes">有该品种</td><td>已接入报价</td><td>HYPE_USDT 期权，232 张</td></tr>
+<tr><td>Bybit</td><td>bybit.com</td><td class="yes">有该品种</td><td>已接入报价</td><td>HYPE 期权，280 张</td></tr>
+<tr><td>Aevo</td><td>aevo.xyz</td><td class="yes">有该品种</td><td>未接入报价</td><td>HYPE 期权，报价接口不稳定</td></tr>
+<tr><td>Derive</td><td>derive.xyz</td><td class="yes">有该品种</td><td>未接入报价</td><td>有合约，但走 RFQ 询价，无公开盘口</td></tr>
+<tr><td>Binance</td><td>binance.com</td><td class="no">无该品种</td><td>—</td><td>期权标的不含 HYPE</td></tr>
+<tr><td>OKX</td><td>okx.com</td><td class="no">无该品种</td><td>—</td><td>期权标的不含 HYPE</td></tr>
+<tr><td>Deribit</td><td>deribit.com</td><td class="no">无该品种</td><td>—</td><td>期权标的不含 HYPE</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>价差明细（点表头可排序）</h2>
+    <table id="t">
+      <thead><tr>
+        <th data-c="0">合约</th><th data-c="1">方向</th><th data-c="2">买价</th>
+        <th data-c="3">卖价</th><th data-c="4">毛利</th><th data-c="5">手续费</th>
+        <th data-c="6">净价差</th><th data-c="7">每张花</th><th data-c="8">实值率</th>
+        <th data-c="9">剩余天数</th><th data-c="10">净年化</th>
+        <th data-c="11">可成交</th><th data-c="12">实赚</th>
+      </tr></thead>
+      <tbody id="tb"><tr><td colspan="13" class="empty">加载中…</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>口径说明（先读这个）</b>
+    <ul>
+      <li>两条腿是<b>同一张合约</b>：同标的、同到期日、同行权价、同类型（都 CALL / 都 PUT）。</li>
+      <li>两家均 <b>USDT 结算（Linear）</b>，不存在币本位敞口。</li>
+      <li>手续费按「费率 × 指数价 × 张数」估算：Gate taker 0.05%、Bybit taker 0.03%。</li>
+       <li><b>1 张 = 1 HYPE</b>（Gate 接口 multiplier = 1）；<b>「每张花」</b>就是买入腿一张实际要付的 USDT。</li>
+       <li><b>「可成交」= 买腿卖单量 ∩ 卖腿买单量</b>（取小）；<b>「实赚」= 净价差 × 可成交量</b>——只剩这个数字才是真到手的钱。</li>
+       <li><b>年化 = 净利润 ÷ 买入腿权利金 × 365 ÷ 剩余天数</b>（与 BTC 那份同口径）。</li>
+      <li><b>未计入</b>：滑点、两腿成交时差、保证金占用、跨所转账。真实落袋比表里更难。</li>
+      <li>净价差为负 = <b>此刻没有机会</b>，这是常态；机会是间歇出现的。</li>
+      <li>点「更新数据」由<b>浏览器直接抓取行情</b>；若跨域或网络受限，会回落到本页内置快照。</li>
+    </ul>
+  </div>
+
+  <footer>看板 HTML 生成时间：2026-09-18 00:09:51　·　数据来源：Gate / Bybit 公开行情接口</footer>
+</div>
+<script>
+const SNAPSHOT = {"rows": [{"contract": "HYPE 2026-09-25 120 C", "direction": "bybit→gate", "buy": 0.06, "sell": 0.02, "gross": -0.04, "fee": 0.0657, "net": -0.1057, "days": 7, "apr": -9184.0, "moneyness_pct": -46.2, "per_contract": 0.06, "mult_guess": true, "usable": 100.0, "real": -10.5679}, {"contract": "HYPE 2026-09-18 79 P", "direction": "gate→bybit", "buy": 0.13, "sell": 0.08, "gross": -0.05, "fee": 0.0657, "net": -0.1157, "days": 1, "apr": -32479.2, "moneyness_pct": -3.8, "per_contract": 0.13, "mult_guess": false, "usable": 1.0, "real": -0.1157}, {"contract": "HYPE 2026-09-18 80 P", "direction": "gate→bybit", "buy": 0.3, "sell": 0.24, "gross": -0.06, "fee": 0.0657, "net": -0.1257, "days": 1, "apr": -15291.0, "moneyness_pct": -2.6, "per_contract": 0.3, "mult_guess": false, "usable": 270.0, "real": -33.9334}, {"contract": "HYPE 2026-09-18 88 C", "direction": "bybit→gate", "buy": 0.15, "sell": 0.05, "gross": -0.1, "fee": 0.0657, "net": -0.1657, "days": 1, "apr": -40315.3, "moneyness_pct": -7.2, "per_contract": 0.15, "mult_guess": true, "usable": 40.0, "real": -6.6272}, {"contract": "HYPE 2026-09-18 84 C", "direction": "gate→bybit", "buy": 0.54, "sell": 0.43, "gross": -0.11, "fee": 0.0657, "net": -0.1757, "days": 1, "apr": -11874.6, "moneyness_pct": -2.3, "per_contract": 0.54, "mult_guess": false, "usable": 173.0, "real": -30.3925}, {"contract": "HYPE 2026-09-19 74 P", "direction": "gate→bybit", "buy": 0.12, "sell": 0.01, "gross": -0.11, "fee": 0.0657, "net": -0.1757, "days": 1, "apr": -53435.8, "moneyness_pct": -9.9, "per_contract": 0.12, "mult_guess": false, "usable": 20.0, "real": -3.5136}, {"contract": "HYPE 2026-09-19 75 P", "direction": "gate→bybit", "buy": 0.16, "sell": 0.02, "gross": -0.14, "fee": 0.0657, "net": -0.2057, "days": 1, "apr": -46920.6, "moneyness_pct": -8.6, "per_contract": 0.16, "mult_guess": false, "usable": 103.0, "real": -21.185}, {"contract": "HYPE 2026-09-18 82 C", "direction": "gate→bybit", "buy": 1.22, "sell": 1.07, "gross": -0.15, "fee": 0.0657, "net": -0.2157, "days": 1, "apr": -6452.7, "moneyness_pct": 0.1, "per_contract": 1.22, "mult_guess": false, "usable": 89.0, "real": -19.1955}, {"contract": "HYPE 2026-09-18 78 P", "direction": "bybit→gate", "buy": 0.22, "sell": 0.06, "gross": -0.16, "fee": 0.0657, "net": -0.2257, "days": 1, "apr": -37442.2, "moneyness_pct": -5.0, "per_contract": 0.22, "mult_guess": true, "usable": 50.0, "real": -11.284}, {"contract": "HYPE 2026-09-18 82 P", "direction": "gate→bybit", "buy": 1.12, "sell": 0.94, "gross": -0.18, "fee": 0.0657, "net": -0.2457, "days": 1, "apr": -8006.5, "moneyness_pct": -0.1, "per_contract": 1.12, "mult_guess": false, "usable": 3.0, "real": -0.737}, {"contract": "HYPE 2026-09-19 76 P", "direction": "gate→bybit", "buy": 0.23, "sell": 0.04, "gross": -0.19, "fee": 0.0657, "net": -0.2557, "days": 1, "apr": -40575.2, "moneyness_pct": -7.4, "per_contract": 0.23, "mult_guess": false, "usable": 1302.0, "real": -332.8944}, {"contract": "HYPE 2026-09-19 88 C", "direction": "bybit→gate", "buy": 0.23, "sell": 0.03, "gross": -0.2, "fee": 0.0657, "net": -0.2657, "days": 1, "apr": -42162.1, "moneyness_pct": -7.2, "per_contract": 0.23, "mult_guess": true, "usable": 40.0, "real": -10.6272}, {"contract": "HYPE 2026-09-18 81 P", "direction": "gate→bybit", "buy": 0.73, "sell": 0.52, "gross": -0.21, "fee": 0.0657, "net": -0.2757, "days": 1, "apr": -13784.0, "moneyness_pct": -1.3, "per_contract": 0.73, "mult_guess": false, "usable": 92.0, "real": -25.3625}, {"contract": "HYPE 2026-09-19 83 C", "direction": "gate→bybit", "buy": 1.39, "sell": 1.18, "gross": -0.21, "fee": 0.0657, "net": -0.2757, "days": 1, "apr": -7239.1, "moneyness_pct": -1.1, "per_contract": 1.39, "mult_guess": false, "usable": 114.0, "real": -31.4274}, {"contract": "HYPE 2026-09-18 81 C", "direction": "gate→bybit", "buy": 1.79, "sell": 1.57, "gross": -0.22, "fee": 0.0657, "net": -0.2857, "days": 1, "apr": -5825.3, "moneyness_pct": 1.3, "per_contract": 1.79, "mult_guess": false, "usable": 30.0, "real": -8.5704}, {"contract": "HYPE 2026-09-19 90 C", "direction": "gate→bybit", "buy": 0.29, "sell": 0.07, "gross": -0.22, "fee": 0.0657, "net": -0.2857, "days": 1, "apr": -35956.2, "moneyness_pct": -9.6, "per_contract": 0.29, "mult_guess": false, "usable": 400.0, "real": -114.2717}, {"contract": "HYPE 2026-09-19 77 P", "direction": "gate→bybit", "buy": 0.33, "sell": 0.1, "gross": -0.23, "fee": 0.0657, "net": -0.2957, "days": 1, "apr": -32703.9, "moneyness_pct": -6.2, "per_contract": 0.33, "mult_guess": false, "usable": 1.0, "real": -0.2957}, {"contract": "HYPE 2026-09-18 83 P", "direction": "gate→bybit", "buy": 1.76, "sell": 1.52, "gross": -0.24, "fee": 0.0657, "net": -0.3057, "days": 1, "apr": -6339.4, "moneyness_pct": 1.1, "per_contract": 1.76, "mult_guess": false, "usable": 23.0, "real": -7.0306}, {"contract": "HYPE 2026-09-19 78 P", "direction": "gate→bybit", "buy": 0.45, "sell": 0.21, "gross": -0.24, "fee": 0.0657, "net": -0.3057, "days": 1, "apr": -24794.0, "moneyness_pct": -5.0, "per_contract": 0.45, "mult_guess": false, "usable": 397.0, "real": -121.3547}, {"contract": "HYPE 2026-09-25 70 P", "direction": "gate→bybit", "buy": 0.41, "sell": 0.15, "gross": -0.26, "fee": 0.0657, "net": -0.3257, "days": 7, "apr": -4141.9, "moneyness_pct": -14.7, "per_contract": 0.41, "mult_guess": false, "usable": 400.0, "real": -130.2717}, {"contract": "HYPE 2026-09-25 70 P", "direction": "bybit→gate", "buy": 0.27, "sell": 0.01, "gross": -0.26, "fee": 0.0657, "net": -0.3257, "days": 7, "apr": -6289.6, "moneyness_pct": -14.7, "per_contract": 0.27, "mult_guess": true, "usable": 100.0, "real": -32.5679}, {"contract": "HYPE 2026-09-19 88 C", "direction": "gate→bybit", "buy": 0.42, "sell": 0.15, "gross": -0.27, "fee": 0.0657, "net": -0.3357, "days": 1, "apr": -29172.1, "moneyness_pct": -7.2, "per_contract": 0.42, "mult_guess": false, "usable": 400.0, "real": -134.2717}, {"contract": "HYPE 2026-09-18 83 C", "direction": "gate→bybit", "buy": 0.97, "sell": 0.69, "gross": -0.28, "fee": 0.0657, "net": -0.3457, "days": 1, "apr": -13007.5, "moneyness_pct": -1.1, "per_contract": 0.97, "mult_guess": false, "usable": 121.0, "real": -41.8272}, {"contract": "HYPE 2026-09-19 86 C", "direction": "gate→bybit", "buy": 0.73, "sell": 0.44, "gross": -0.29, "fee": 0.0657, "net": -0.3557, "days": 1, "apr": -17784.0, "moneyness_pct": -4.8, "per_contract": 0.73, "mult_guess": false, "usable": 225.0, "real": -80.0278}, {"contract": "HYPE 2026-09-18 85 C", "direction": "bybit→gate", "buy": 0.33, "sell": 0.02, "gross": -0.31, "fee": 0.0657, "net": -0.3757, "days": 1, "apr": -41552.4, "moneyness_pct": -3.5, "per_contract": 0.33, "mult_guess": true, "usable": 451.0, "real": -169.4313}, {"contract": "HYPE 2026-09-19 79 P", "direction": "gate→bybit", "buy": 0.69, "sell": 0.37, "gross": -0.32, "fee": 0.0657, "net": -0.3857, "days": 1, "apr": -20401.9, "moneyness_pct": -3.8, "per_contract": 0.69, "mult_guess": false, "usable": 267.0, "real": -102.9764}, {"contract": "HYPE 2026-09-25 95 C", "direction": "gate→bybit", "buy": 0.69, "sell": 0.35, "gross": -0.34, "fee": 0.0657, "net": -0.4057, "days": 7, "apr": -3065.7, "moneyness_pct": -15.7, "per_contract": 0.69, "mult_guess": false, "usable": 400.0, "real": -162.2717}, {"contract": "HYPE 2026-09-19 81 C", "direction": "gate→bybit", "buy": 2.41, "sell": 2.05, "gross": -0.36, "fee": 0.0657, "net": -0.4257, "days": 1, "apr": -6447.0, "moneyness_pct": 1.3, "per_contract": 2.41, "mult_guess": false, "usable": 121.0, "real": -51.5072}, {"contract": "HYPE 2026-09-19 82 P", "direction": "gate→bybit", "buy": 1.84, "sell": 1.48, "gross": -0.36, "fee": 0.0657, "net": -0.4257, "days": 1, "apr": -8444.2, "moneyness_pct": -0.1, "per_contract": 1.84, "mult_guess": false, "usable": 108.0, "real": -45.9734}, {"contract": "HYPE 2026-09-18 80 P", "direction": "bybit→gate", "buy": 0.39, "sell": 0.02, "gross": -0.37, "fee": 0.0657, "net": -0.4357, "days": 1, "apr": -40775.1, "moneyness_pct": -2.6, "per_contract": 0.39, "mult_guess": true, "usable": 451.0, "real": -196.4913}, {"contract": "HYPE 2026-09-19 78 P", "direction": "bybit→gate", "buy": 0.4, "sell": 0.03, "gross": -0.37, "fee": 0.0657, "net": -0.4357, "days": 1, "apr": -39755.7, "moneyness_pct": -5.0, "per_contract": 0.4, "mult_guess": true, "usable": 397.0, "real": -172.9647}, {"contract": "HYPE 2026-09-19 82 C", "direction": "gate→bybit", "buy": 1.94, "sell": 1.56, "gross": -0.38, "fee": 0.0657, "net": -0.4457, "days": 1, "apr": -8385.2, "moneyness_pct": 0.1, "per_contract": 1.94, "mult_guess": false, "usable": 93.0, "real": -41.4482}, {"contract": "HYPE 2026-09-19 85 C", "direction": "gate→bybit", "buy": 0.99, "sell": 0.6, "gross": -0.39, "fee": 0.0657, "net": -0.4557, "days": 1, "apr": -16800.3, "moneyness_pct": -3.5, "per_contract": 0.99, "mult_guess": false, "usable": 200.0, "real": -91.1359}, {"contract": "HYPE 2026-09-19 86 C", "direction": "bybit→gate", "buy": 0.45, "sell": 0.06, "gross": -0.39, "fee": 0.0657, "net": -0.4557, "days": 1, "apr": -36960.7, "moneyness_pct": -4.8, "per_contract": 0.45, "mult_guess": true, "usable": 45.0, "real": -20.5056}, {"contract": "HYPE 2026-09-25 72 P", "direction": "bybit→gate", "buy": 0.41, "sell": 0.01, "gross": -0.4, "fee": 0.0657, "net": -0.4657, "days": 7, "apr": -5922.4, "moneyness_pct": -12.3, "per_contract": 0.41, "mult_guess": true, "usable": 230.0, "real": -107.1062}, {"contract": "HYPE 2026-09-25 92 C", "direction": "gate→bybit", "buy": 1.0, "sell": 0.58, "gross": -0.42, "fee": 0.0657, "net": -0.4857, "days": 7, "apr": -2532.5, "moneyness_pct": -12.1, "per_contract": 1.0, "mult_guess": false, "usable": 368.0, "real": -178.73}, {"contract": "HYPE 2026-09-18 80 C", "direction": "gate→bybit", "buy": 2.72, "sell": 2.3, "gross": -0.42, "fee": 0.0657, "net": -0.4857, "days": 1, "apr": -6517.4, "moneyness_pct": 2.6, "per_contract": 2.72, "mult_guess": false, "usable": 121.0, "real": -58.7672}, {"contract": "HYPE 2026-09-25 72 P", "direction": "gate→bybit", "buy": 0.68, "sell": 0.25, "gross": -0.43, "fee": 0.0657, "net": -0.4957, "days": 7, "apr": -3800.9, "moneyness_pct": -12.3, "per_contract": 0.68, "mult_guess": false, "usable": 400.0, "real": -198.2717}, {"contract": "HYPE 2026-09-19 79 P", "direction": "bybit→gate", "buy": 0.5, "sell": 0.05, "gross": -0.45, "fee": 0.0657, "net": -0.5157, "days": 1, "apr": -37644.6, "moneyness_pct": -3.8, "per_contract": 0.5, "mult_guess": true, "usable": 5.0, "real": -2.5784}, {"contract": "HYPE 2026-09-25 90 C", "direction": "gate→bybit", "buy": 1.37, "sell": 0.92, "gross": -0.45, "fee": 0.0657, "net": -0.5157, "days": 7, "apr": -1962.7, "moneyness_pct": -9.6, "per_contract": 1.37, "mult_guess": false, "usable": 262.0, "real": -135.108}, {"contract": "HYPE 2026-09-19 80 P", "direction": "gate→bybit", "buy": 1.08, "sell": 0.62, "gross": -0.46, "fee": 0.0657, "net": -0.5257, "days": 1, "apr": -17766.0, "moneyness_pct": -2.6, "per_contract": 1.08, "mult_guess": false, "usable": 187.0, "real": -98.302}, {"contract": "HYPE 2026-09-18 84 C", "direction": "bybit→gate", "buy": 0.53, "sell": 0.04, "gross": -0.49, "fee": 0.0657, "net": -0.5557, "days": 1, "apr": -38268.5, "moneyness_pct": -2.3, "per_contract": 0.53, "mult_guess": true, "usable": 451.0, "real": -250.6113}, {"contract": "HYPE 2026-09-19 84 C", "direction": "gate→bybit", "buy": 1.36, "sell": 0.84, "gross": -0.52, "fee": 0.0657, "net": -0.5857, "days": 1, "apr": -15718.6, "moneyness_pct": -2.3, "per_contract": 1.36, "mult_guess": false, "usable": 143.0, "real": -83.7521}, {"contract": "HYPE 2026-09-19 85 C", "direction": "bybit→gate", "buy": 0.61, "sell": 0.08, "gross": -0.53, "fee": 0.0657, "net": -0.5957, "days": 1, "apr": -35643.1, "moneyness_pct": -3.5, "per_contract": 0.61, "mult_guess": true, "usable": 30.0, "real": -17.8704}, {"contract": "HYPE 2026-09-18 83 P", "direction": "bybit→gate", "buy": 1.67, "sell": 1.13, "gross": -0.54, "fee": 0.0657, "net": -0.6057, "days": 1, "apr": -13237.9, "moneyness_pct": 1.1, "per_contract": 1.67, "mult_guess": true, "usable": 121.0, "real": -73.2872}, {"contract": "HYPE 2026-09-18 77 P", "direction": "bybit→gate", "buy": 0.59, "sell": 0.04, "gross": -0.55, "fee": 0.0657, "net": -0.6157, "days": 1, "apr": -38088.6, "moneyness_pct": -6.2, "per_contract": 0.59, "mult_guess": true, "usable": 40.0, "real": -24.6272}, {"contract": "HYPE 2026-09-25 84 C", "direction": "gate→bybit", "buy": 2.67, "sell": 2.12, "gross": -0.55, "fee": 0.0657, "net": -0.6157, "days": 7, "apr": -1202.4, "moneyness_pct": -2.3, "per_contract": 2.67, "mult_guess": false, "usable": 121.0, "real": -74.4972}, {"contract": "HYPE 2026-09-25 60 P", "direction": "bybit→gate", "buy": 0.58, "sell": 0.02, "gross": -0.56, "fee": 0.0657, "net": -0.6257, "days": 7, "apr": -5624.9, "moneyness_pct": -26.9, "per_contract": 0.58, "mult_guess": true, "usable": 100.0, "real": -62.5679}, {"contract": "HYPE 2026-09-19 83 C", "direction": "bybit→gate", "buy": 1.22, "sell": 0.65, "gross": -0.57, "fee": 0.0657, "net": -0.6357, "days": 1, "apr": -19018.3, "moneyness_pct": -1.1, "per_contract": 1.22, "mult_guess": true, "usable": 40.0, "real": -25.4272}, {"contract": "HYPE 2026-09-25 74 P", "direction": "gate→bybit", "buy": 1.02, "sell": 0.45, "gross": -0.57, "fee": 0.0657, "net": -0.6357, "days": 7, "apr": -3249.6, "moneyness_pct": -9.9, "per_contract": 1.02, "mult_guess": false, "usable": 332.0, "real": -211.0455}, {"contract": "HYPE 2026-09-18 82 P", "direction": "bybit→gate", "buy": 1.12, "sell": 0.53, "gross": -0.59, "fee": 0.0657, "net": -0.6557, "days": 1, "apr": -21368.1, "moneyness_pct": -0.1, "per_contract": 1.12, "mult_guess": true, "usable": 451.0, "real": -295.7113}, {"contract": "HYPE 2026-09-25 92 C", "direction": "bybit→gate", "buy": 0.68, "sell": 0.08, "gross": -0.6, "fee": 0.0657, "net": -0.6657, "days": 7, "apr": -5104.5, "moneyness_pct": -12.1, "per_contract": 0.68, "mult_guess": true, "usable": 30.0, "real": -19.9704}, {"contract": "HYPE 2026-09-19 83 P", "direction": "gate→bybit", "buy": 2.65, "sell": 2.04, "gross": -0.61, "fee": 0.0657, "net": -0.6757, "days": 1, "apr": -9306.5, "moneyness_pct": 1.1, "per_contract": 2.65, "mult_guess": false, "usable": 20.0, "real": -13.5136}, {"contract": "HYPE 2026-09-25 74 P", "direction": "bybit→gate", "buy": 0.69, "sell": 0.08, "gross": -0.61, "fee": 0.0657, "net": -0.6757, "days": 7, "apr": -5106.1, "moneyness_pct": -9.9, "per_contract": 0.69, "mult_guess": true, "usable": 332.0, "real": -224.3255}, {"contract": "HYPE 2026-09-18 84 P", "direction": "gate→bybit", "buy": 2.7, "sell": 2.07, "gross": -0.63, "fee": 0.0657, "net": -0.6957, "days": 1, "apr": -9404.6, "moneyness_pct": 2.3, "per_contract": 2.7, "mult_guess": false, "usable": 121.0, "real": -84.1772}, {"contract": "HYPE 2026-09-18 81 P", "direction": "bybit→gate", "buy": 0.7, "sell": 0.06, "gross": -0.64, "fee": 0.0657, "net": -0.7057, "days": 1, "apr": -36796.1, "moneyness_pct": -1.3, "per_contract": 0.7, "mult_guess": true, "usable": 451.0, "real": -318.2613}, {"contract": "HYPE 2026-09-19 84 P", "direction": "gate→bybit", "buy": 3.24, "sell": 2.6, "gross": -0.64, "fee": 0.0657, "net": -0.7057, "days": 1, "apr": -7949.8, "moneyness_pct": 2.3, "per_contract": 3.24, "mult_guess": false, "usable": 20.0, "real": -14.1136}, {"contract": "HYPE 2026-09-19 80 C", "direction": "gate→bybit", "buy": 3.24, "sell": 2.6, "gross": -0.64, "fee": 0.0657, "net": -0.7057, "days": 1, "apr": -7949.8, "moneyness_pct": 2.6, "per_contract": 3.24, "mult_guess": false, "usable": 121.0, "real": -85.3872}, {"contract": "HYPE 2026-09-19 82 P", "direction": "bybit→gate", "buy": 1.54, "sell": 0.87, "gross": -0.67, "fee": 0.0657, "net": -0.7357, "days": 1, "apr": -17436.6, "moneyness_pct": -0.1, "per_contract": 1.54, "mult_guess": true, "usable": 135.0, "real": -99.3167}, {"contract": "HYPE 2026-09-25 75 P", "direction": "gate→bybit", "buy": 1.28, "sell": 0.6, "gross": -0.68, "fee": 0.0657, "net": -0.7457, "days": 7, "apr": -3037.6, "moneyness_pct": -8.6, "per_contract": 1.28, "mult_guess": false, "usable": 278.0, "real": -207.2988}, {"contract": "HYPE 2026-09-19 81 P", "direction": "gate→bybit", "buy": 1.67, "sell": 0.97, "gross": -0.7, "fee": 0.0657, "net": -0.7657, "days": 1, "apr": -16734.9, "moneyness_pct": -1.3, "per_contract": 1.67, "mult_guess": false, "usable": 138.0, "real": -105.6637}, {"contract": "HYPE 2026-09-18 82 C", "direction": "bybit→gate", "buy": 1.28, "sell": 0.57, "gross": -0.71, "fee": 0.0657, "net": -0.7757, "days": 1, "apr": -22119.0, "moneyness_pct": 0.1, "per_contract": 1.28, "mult_guess": true, "usable": 121.0, "real": -93.8572}, {"contract": "HYPE 2026-09-19 80 P", "direction": "bybit→gate", "buy": 0.8, "sell": 0.08, "gross": -0.72, "fee": 0.0657, "net": -0.7857, "days": 1, "apr": -35846.6, "moneyness_pct": -2.6, "per_contract": 0.8, "mult_guess": true, "usable": 227.0, "real": -178.3492}, {"contract": "HYPE 2026-09-18 84 P", "direction": "bybit→gate", "buy": 2.46, "sell": 1.73, "gross": -0.73, "fee": 0.0657, "net": -0.7957, "days": 1, "apr": -11805.8, "moneyness_pct": 2.3, "per_contract": 2.46, "mult_guess": true, "usable": 121.0, "real": -96.2772}, {"contract": "HYPE 2026-09-18 81 C", "direction": "bybit→gate", "buy": 1.88, "sell": 1.15, "gross": -0.73, "fee": 0.0657, "net": -0.7957, "days": 1, "apr": -15448.0, "moneyness_pct": 1.3, "per_contract": 1.88, "mult_guess": true, "usable": 121.0, "real": -96.2772}, {"contract": "HYPE 2026-09-18 83 C", "direction": "bybit→gate", "buy": 0.82, "sell": 0.08, "gross": -0.74, "fee": 0.0657, "net": -0.8057, "days": 1, "apr": -35862.6, "moneyness_pct": -1.1, "per_contract": 0.82, "mult_guess": true, "usable": 451.0, "real": -363.3613}, {"contract": "HYPE 2026-09-19 81 C", "direction": "bybit→gate", "buy": 2.28, "sell": 1.54, "gross": -0.74, "fee": 0.0657, "net": -0.8057, "days": 1, "apr": -12897.9, "moneyness_pct": 1.3, "per_contract": 2.28, "mult_guess": true, "usable": 40.0, "real": -32.2272}, {"contract": "HYPE 2026-09-19 84 P", "direction": "bybit→gate", "buy": 2.82, "sell": 2.08, "gross": -0.74, "fee": 0.0657, "net": -0.8057, "days": 1, "apr": -10428.1, "moneyness_pct": 2.3, "per_contract": 2.82, "mult_guess": true, "usable": 30.0, "real": -24.1704}, {"contract": "HYPE 2026-09-19 84 C", "direction": "bybit→gate", "buy": 0.86, "sell": 0.11, "gross": -0.75, "fee": 0.0657, "net": -0.8157, "days": 1, "apr": -34618.9, "moneyness_pct": -2.3, "per_contract": 0.86, "mult_guess": true, "usable": 40.0, "real": -32.6272}, {"contract": "HYPE 2026-09-25 75 P", "direction": "bybit→gate", "buy": 0.85, "sell": 0.1, "gross": -0.75, "fee": 0.0657, "net": -0.8157, "days": 7, "apr": -5003.7, "moneyness_pct": -8.6, "per_contract": 0.85, "mult_guess": true, "usable": 318.0, "real": -259.386}, {"contract": "HYPE 2026-09-25 88 C", "direction": "gate→bybit", "buy": 1.88, "sell": 1.12, "gross": -0.76, "fee": 0.0657, "net": -0.8257, "days": 7, "apr": -2290.1, "moneyness_pct": -7.2, "per_contract": 1.88, "mult_guess": false, "usable": 201.0, "real": -165.9615}, {"contract": "HYPE 2026-09-19 82 C", "direction": "bybit→gate", "buy": 1.68, "sell": 0.91, "gross": -0.77, "fee": 0.0657, "net": -0.8357, "days": 1, "apr": -18156.1, "moneyness_pct": 0.1, "per_contract": 1.68, "mult_guess": true, "usable": 3.0, "real": -2.507}, {"contract": "HYPE 2026-09-18 85 P", "direction": "gate→bybit", "buy": 3.75, "sell": 2.96, "gross": -0.79, "fee": 0.0657, "net": -0.8557, "days": 1, "apr": -8328.6, "moneyness_pct": 3.5, "per_contract": 3.75, "mult_guess": false, "usable": 121.0, "real": -103.5372}, {"contract": "HYPE 2026-09-25 80 C", "direction": "gate→bybit", "buy": 4.89, "sell": 4.1, "gross": -0.79, "fee": 0.0657, "net": -0.8557, "days": 7, "apr": -912.4, "moneyness_pct": 2.6, "per_contract": 4.89, "mult_guess": false, "usable": 121.0, "real": -103.5372}, {"contract": "HYPE 2026-09-18 80 C", "direction": "bybit→gate", "buy": 2.56, "sell": 1.75, "gross": -0.81, "fee": 0.0657, "net": -0.8757, "days": 1, "apr": -12485.3, "moneyness_pct": 2.6, "per_contract": 2.56, "mult_guess": true, "usable": 121.0, "real": -105.9572}, {"contract": "HYPE 2026-09-25 76 P", "direction": "gate→bybit", "buy": 1.6, "sell": 0.78, "gross": -0.82, "fee": 0.0657, "net": -0.8857, "days": 7, "apr": -2886.4, "moneyness_pct": -7.4, "per_contract": 1.6, "mult_guess": false, "usable": 234.0, "real": -207.2489}, {"contract": "HYPE 2026-09-25 90 C", "direction": "bybit→gate", "buy": 0.93, "sell": 0.11, "gross": -0.82, "fee": 0.0657, "net": -0.8857, "days": 7, "apr": -4965.8, "moneyness_pct": -9.6, "per_contract": 0.93, "mult_guess": true, "usable": 40.0, "real": -35.4272}, {"contract": "HYPE 2026-09-18 85 P", "direction": "bybit→gate", "buy": 3.24, "sell": 2.41, "gross": -0.83, "fee": 0.0657, "net": -0.8957, "days": 1, "apr": -10090.2, "moneyness_pct": 3.5, "per_contract": 3.24, "mult_guess": true, "usable": 121.0, "real": -108.3772}, {"contract": "HYPE 2026-09-19 83 P", "direction": "bybit→gate", "buy": 2.08, "sell": 1.24, "gross": -0.84, "fee": 0.0657, "net": -0.9057, "days": 1, "apr": -15892.9, "moneyness_pct": 1.1, "per_contract": 2.08, "mult_guess": true, "usable": 40.0, "real": -36.2272}, {"contract": "HYPE 2026-09-19 79 C", "direction": "gate→bybit", "buy": 4.2, "sell": 3.36, "gross": -0.84, "fee": 0.0657, "net": -0.9057, "days": 1, "apr": -7870.8, "moneyness_pct": 3.8, "per_contract": 4.2, "mult_guess": false, "usable": 121.0, "real": -109.5872}, {"contract": "HYPE 2026-09-25 82 C", "direction": "gate→bybit", "buy": 3.87, "sell": 3.02, "gross": -0.85, "fee": 0.0657, "net": -0.9157, "days": 7, "apr": -1233.8, "moneyness_pct": 0.1, "per_contract": 3.87, "mult_guess": false, "usable": 97.0, "real": -88.8209}, {"contract": "HYPE 2026-09-19 85 P", "direction": "bybit→gate", "buy": 3.59, "sell": 2.7, "gross": -0.89, "fee": 0.0657, "net": -0.9557, "days": 1, "apr": -9716.5, "moneyness_pct": 3.5, "per_contract": 3.59, "mult_guess": true, "usable": 30.0, "real": -28.6704}, {"contract": "HYPE 2026-09-25 76 P", "direction": "bybit→gate", "buy": 1.03, "sell": 0.13, "gross": -0.9, "fee": 0.0657, "net": -0.9657, "days": 7, "apr": -4888.7, "moneyness_pct": -7.4, "per_contract": 1.03, "mult_guess": true, "usable": 234.0, "real": -225.9689}, {"contract": "HYPE 2026-09-18 79 C", "direction": "gate→bybit", "buy": 3.77, "sell": 2.86, "gross": -0.91, "fee": 0.0657, "net": -0.9757, "days": 1, "apr": -9446.2, "moneyness_pct": 3.8, "per_contract": 3.77, "mult_guess": false, "usable": 36.0, "real": -35.1245}, {"contract": "HYPE 2026-09-25 82 P", "direction": "gate→bybit", "buy": 3.77, "sell": 2.8, "gross": -0.97, "fee": 0.0657, "net": -1.0357, "days": 7, "apr": -1432.4, "moneyness_pct": -0.1, "per_contract": 3.77, "mult_guess": false, "usable": 102.0, "real": -105.6393}, {"contract": "HYPE 2026-09-19 80 C", "direction": "bybit→gate", "buy": 3.04, "sell": 2.07, "gross": -0.97, "fee": 0.0657, "net": -1.0357, "days": 1, "apr": -12435.0, "moneyness_pct": 2.6, "per_contract": 3.04, "mult_guess": true, "usable": 30.0, "real": -31.0704}, {"contract": "HYPE 2026-09-19 81 P", "direction": "bybit→gate", "buy": 1.12, "sell": 0.13, "gross": -0.99, "fee": 0.0657, "net": -1.0557, "days": 1, "apr": -34403.8, "moneyness_pct": -1.3, "per_contract": 1.12, "mult_guess": true, "usable": 178.0, "real": -187.9109}, {"contract": "HYPE 2026-09-18 86 P", "direction": "bybit→gate", "buy": 4.19, "sell": 3.2, "gross": -0.99, "fee": 0.0657, "net": -1.0557, "days": 1, "apr": -9196.3, "moneyness_pct": 4.8, "per_contract": 4.19, "mult_guess": true, "usable": 30.0, "real": -31.6704}, {"contract": "HYPE 2026-09-19 85 P", "direction": "gate→bybit", "buy": 4.21, "sell": 3.22, "gross": -0.99, "fee": 0.0657, "net": -1.0557, "days": 1, "apr": -9152.6, "moneyness_pct": 3.5, "per_contract": 4.21, "mult_guess": false, "usable": 121.0, "real": -127.7372}, {"contract": "HYPE 2026-09-19 78 C", "direction": "gate→bybit", "buy": 5.26, "sell": 4.25, "gross": -1.01, "fee": 0.0657, "net": -1.0757, "days": 1, "apr": -7464.3, "moneyness_pct": 5.0, "per_contract": 5.26, "mult_guess": false, "usable": 121.0, "real": -130.1572}, {"contract": "HYPE 2026-09-25 85 P", "direction": "gate→bybit", "buy": 5.58, "sell": 4.56, "gross": -1.02, "fee": 0.0657, "net": -1.0857, "days": 7, "apr": -1014.5, "moneyness_pct": 3.5, "per_contract": 5.58, "mult_guess": false, "usable": 30.0, "real": -32.5704}, {"contract": "HYPE 2026-09-25 86 C", "direction": "gate→bybit", "buy": 2.6, "sell": 1.56, "gross": -1.04, "fee": 0.0657, "net": -1.1057, "days": 7, "apr": -2217.4, "moneyness_pct": -4.8, "per_contract": 2.6, "mult_guess": false, "usable": 154.0, "real": -170.2746}, {"contract": "HYPE 2026-09-19 79 C", "direction": "bybit→gate", "buy": 3.78, "sell": 2.7, "gross": -1.08, "fee": 0.0657, "net": -1.1457, "days": 1, "apr": -11062.8, "moneyness_pct": 3.8, "per_contract": 3.78, "mult_guess": true, "usable": 121.0, "real": -138.6272}, {"contract": "HYPE 2026-09-18 78 C", "direction": "gate→bybit", "buy": 4.92, "sell": 3.81, "gross": -1.11, "fee": 0.0657, "net": -1.1757, "days": 1, "apr": -8722.0, "moneyness_pct": 5.0, "per_contract": 4.92, "mult_guess": false, "usable": 12.0, "real": -14.1082}, {"contract": "HYPE 2026-09-18 79 C", "direction": "bybit→gate", "buy": 3.62, "sell": 2.51, "gross": -1.11, "fee": 0.0657, "net": -1.1757, "days": 1, "apr": -11854.2, "moneyness_pct": 3.8, "per_contract": 3.62, "mult_guess": true, "usable": 36.0, "real": -42.3245}, {"contract": "HYPE 2026-09-25 88 C", "direction": "bybit→gate", "buy": 1.27, "sell": 0.15, "gross": -1.12, "fee": 0.0657, "net": -1.1857, "days": 7, "apr": -4868.1, "moneyness_pct": -7.2, "per_contract": 1.27, "mult_guess": true, "usable": 30.0, "real": -35.5704}, {"contract": "HYPE 2026-09-25 78 P", "direction": "gate→bybit", "buy": 2.43, "sell": 1.27, "gross": -1.16, "fee": 0.0657, "net": -1.2257, "days": 7, "apr": -2630.1, "moneyness_pct": -5.0, "per_contract": 2.43, "mult_guess": false, "usable": 169.0, "real": -207.1398}, {"contract": "HYPE 2026-09-18 86 P", "direction": "gate→bybit", "buy": 4.81, "sell": 3.65, "gross": -1.16, "fee": 0.0657, "net": -1.2257, "days": 1, "apr": -9300.9, "moneyness_pct": 4.8, "per_contract": 4.81, "mult_guess": false, "usable": 30.0, "real": -36.7704}, {"contract": "HYPE 2026-09-19 86 P", "direction": "bybit→gate", "buy": 4.55, "sell": 3.37, "gross": -1.18, "fee": 0.0657, "net": -1.2457, "days": 1, "apr": -9992.8, "moneyness_pct": 4.8, "per_contract": 4.55, "mult_guess": true, "usable": 30.0, "real": -37.3704}, {"contract": "HYPE 2026-09-25 84 C", "direction": "bybit→gate", "buy": 2.45, "sell": 1.25, "gross": -1.2, "fee": 0.0657, "net": -1.2657, "days": 7, "apr": -2693.7, "moneyness_pct": -2.3, "per_contract": 2.45, "mult_guess": true, "usable": 40.0, "real": -50.6272}, {"contract": "HYPE 2026-09-25 85 C", "direction": "gate→bybit", "buy": 3.07, "sell": 1.86, "gross": -1.21, "fee": 0.0657, "net": -1.2757, "days": 7, "apr": -2166.7, "moneyness_pct": -3.5, "per_contract": 3.07, "mult_guess": false, "usable": 136.0, "real": -173.4924}, {"contract": "HYPE 2026-09-25 78 C", "direction": "gate→bybit", "buy": 6.57, "sell": 5.35, "gross": -1.22, "fee": 0.0657, "net": -1.2857, "days": 7, "apr": -1020.4, "moneyness_pct": 5.0, "per_contract": 6.57, "mult_guess": false, "usable": 121.0, "real": -155.5672}, {"contract": "HYPE 2026-09-19 78 C", "direction": "bybit→gate", "buy": 4.62, "sell": 3.38, "gross": -1.24, "fee": 0.0657, "net": -1.3057, "days": 1, "apr": -10315.4, "moneyness_pct": 5.0, "per_contract": 4.62, "mult_guess": true, "usable": 121.0, "real": -157.9872}, {"contract": "HYPE 2026-09-25 86 P", "direction": "gate→bybit", "buy": 6.49, "sell": 5.2, "gross": -1.29, "fee": 0.0657, "net": -1.3557, "days": 7, "apr": -1089.2, "moneyness_pct": 4.8, "per_contract": 6.49, "mult_guess": false, "usable": 121.0, "real": -164.0372}, {"contract": "HYPE 2026-09-18 77 C", "direction": "gate→bybit", "buy": 6.1, "sell": 4.81, "gross": -1.29, "fee": 0.0657, "net": -1.3557, "days": 1, "apr": -8111.9, "moneyness_pct": 6.2, "per_contract": 6.1, "mult_guess": false, "usable": 12.0, "real": -16.2682}, {"contract": "HYPE 2026-09-25 80 C", "direction": "bybit→gate", "buy": 4.44, "sell": 3.14, "gross": -1.3, "fee": 0.0657, "net": -1.3657, "days": 7, "apr": -1603.8, "moneyness_pct": 2.6, "per_contract": 4.44, "mult_guess": true, "usable": 40.0, "real": -54.6272}, {"contract": "HYPE 2026-09-25 78 P", "direction": "bybit→gate", "buy": 1.53, "sell": 0.19, "gross": -1.34, "fee": 0.0657, "net": -1.4057, "days": 7, "apr": -4790.6, "moneyness_pct": -5.0, "per_contract": 1.53, "mult_guess": true, "usable": 199.0, "real": -279.7302}, {"contract": "HYPE 2026-09-19 86 P", "direction": "gate→bybit", "buy": 5.26, "sell": 3.91, "gross": -1.35, "fee": 0.0657, "net": -1.4157, "days": 1, "apr": -9823.6, "moneyness_pct": 4.8, "per_contract": 5.26, "mult_guess": false, "usable": 66.0, "real": -93.4348}, {"contract": "HYPE 2026-09-25 85 P", "direction": "bybit→gate", "buy": 4.93, "sell": 3.58, "gross": -1.35, "fee": 0.0657, "net": -1.4157, "days": 7, "apr": -1497.3, "moneyness_pct": 3.5, "per_contract": 4.93, "mult_guess": true, "usable": 30.0, "real": -42.4704}, {"contract": "HYPE 2026-09-25 82 P", "direction": "bybit→gate", "buy": 3.13, "sell": 1.77, "gross": -1.36, "fee": 0.0657, "net": -1.4257, "days": 7, "apr": -2375.0, "moneyness_pct": -0.1, "per_contract": 3.13, "mult_guess": true, "usable": 132.0, "real": -188.1897}, {"contract": "HYPE 2026-09-25 84 P", "direction": "gate→bybit", "buy": 5.28, "sell": 3.92, "gross": -1.36, "fee": 0.0657, "net": -1.4257, "days": 7, "apr": -1407.9, "moneyness_pct": 2.3, "per_contract": 5.28, "mult_guess": false, "usable": 121.0, "real": -172.5072}, {"contract": "HYPE 2026-09-25 82 C", "direction": "bybit→gate", "buy": 3.32, "sell": 1.82, "gross": -1.5, "fee": 0.0657, "net": -1.5657, "days": 7, "apr": -2459.0, "moneyness_pct": 0.1, "per_contract": 3.32, "mult_guess": true, "usable": 30.0, "real": -46.9704}, {"contract": "HYPE 2026-09-25 86 P", "direction": "bybit→gate", "buy": 5.7, "sell": 4.17, "gross": -1.53, "fee": 0.0657, "net": -1.5957, "days": 7, "apr": -1459.7, "moneyness_pct": 4.8, "per_contract": 5.7, "mult_guess": true, "usable": 30.0, "real": -47.8704}, {"contract": "HYPE 2026-09-25 86 C", "direction": "bybit→gate", "buy": 1.77, "sell": 0.21, "gross": -1.56, "fee": 0.0657, "net": -1.6257, "days": 7, "apr": -4789.1, "moneyness_pct": -4.8, "per_contract": 1.77, "mult_guess": true, "usable": 30.0, "real": -48.7704}, {"contract": "HYPE 2026-09-25 76 C", "direction": "gate→bybit", "buy": 8.45, "sell": 6.86, "gross": -1.59, "fee": 0.0657, "net": -1.6557, "days": 7, "apr": -1021.7, "moneyness_pct": 7.4, "per_contract": 8.45, "mult_guess": false, "usable": 121.0, "real": -200.3372}, {"contract": "HYPE 2026-09-19 77 C", "direction": "gate→bybit", "buy": 6.29, "sell": 4.68, "gross": -1.61, "fee": 0.0657, "net": -1.6757, "days": 1, "apr": -9723.7, "moneyness_pct": 6.2, "per_contract": 6.29, "mult_guess": false, "usable": 36.0, "real": -60.3245}, {"contract": "HYPE 2026-09-25 80 P", "direction": "gate→bybit", "buy": 3.59, "sell": 1.93, "gross": -1.66, "fee": 0.0657, "net": -1.7257, "days": 7, "apr": -2506.5, "moneyness_pct": -2.6, "per_contract": 3.59, "mult_guess": false, "usable": 128.0, "real": -220.8869}, {"contract": "HYPE 2026-09-19 77 C", "direction": "bybit→gate", "buy": 5.95, "sell": 4.19, "gross": -1.76, "fee": 0.0657, "net": -1.8257, "days": 1, "apr": -11199.5, "moneyness_pct": 6.2, "per_contract": 5.95, "mult_guess": true, "usable": 36.0, "real": -65.7245}, {"contract": "HYPE 2026-09-25 75 C", "direction": "gate→bybit", "buy": 9.46, "sell": 7.68, "gross": -1.78, "fee": 0.0657, "net": -1.8457, "days": 7, "apr": -1017.3, "moneyness_pct": 8.6, "per_contract": 9.46, "mult_guess": false, "usable": 121.0, "real": -223.3272}, {"contract": "HYPE 2026-09-19 88 P", "direction": "bybit→gate", "buy": 6.61, "sell": 4.81, "gross": -1.8, "fee": 0.0657, "net": -1.8657, "days": 1, "apr": -10302.2, "moneyness_pct": 7.2, "per_contract": 6.61, "mult_guess": true, "usable": 30.0, "real": -55.9704}, {"contract": "HYPE 2026-09-25 84 P", "direction": "bybit→gate", "buy": 4.28, "sell": 2.48, "gross": -1.8, "fee": 0.0657, "net": -1.8657, "days": 7, "apr": -2272.9, "moneyness_pct": 2.3, "per_contract": 4.28, "mult_guess": true, "usable": 40.0, "real": -74.6272}, {"contract": "HYPE 2026-09-25 88 P", "direction": "bybit→gate", "buy": 7.23, "sell": 5.42, "gross": -1.81, "fee": 0.0657, "net": -1.8757, "days": 7, "apr": -1352.7, "moneyness_pct": 7.2, "per_contract": 7.23, "mult_guess": true, "usable": 30.0, "real": -56.2704}, {"contract": "HYPE 2026-09-25 85 C", "direction": "bybit→gate", "buy": 2.09, "sell": 0.24, "gross": -1.85, "fee": 0.0657, "net": -1.9157, "days": 7, "apr": -4779.4, "moneyness_pct": -3.5, "per_contract": 2.09, "mult_guess": true, "usable": 30.0, "real": -57.4704}, {"contract": "HYPE 2026-09-25 78 C", "direction": "bybit→gate", "buy": 6.15, "sell": 4.21, "gross": -1.94, "fee": 0.0657, "net": -2.0057, "days": 7, "apr": -1700.5, "moneyness_pct": 5.0, "per_contract": 6.15, "mult_guess": true, "usable": 30.0, "real": -60.1704}, {"contract": "HYPE 2026-09-19 76 C", "direction": "gate→bybit", "buy": 7.43, "sell": 5.49, "gross": -1.94, "fee": 0.0657, "net": -2.0057, "days": 1, "apr": -9852.9, "moneyness_pct": 7.4, "per_contract": 7.43, "mult_guess": false, "usable": 36.0, "real": -72.2045}, {"contract": "HYPE 2026-09-25 80 P", "direction": "bybit→gate", "buy": 2.23, "sell": 0.28, "gross": -1.95, "fee": 0.0657, "net": -2.0157, "days": 7, "apr": -4713.2, "moneyness_pct": -2.6, "per_contract": 2.23, "mult_guess": true, "usable": 168.0, "real": -338.6341}, {"contract": "HYPE 2026-09-19 88 P", "direction": "gate→bybit", "buy": 7.5, "sell": 5.53, "gross": -1.97, "fee": 0.0657, "net": -2.0357, "days": 1, "apr": -9907.0, "moneyness_pct": 7.2, "per_contract": 7.5, "mult_guess": false, "usable": 30.0, "real": -61.0704}, {"contract": "HYPE 2026-09-25 74 C", "direction": "gate→bybit", "buy": 10.51, "sell": 8.53, "gross": -1.98, "fee": 0.0657, "net": -2.0457, "days": 7, "apr": -1014.9, "moneyness_pct": 9.9, "per_contract": 10.51, "mult_guess": false, "usable": 121.0, "real": -247.5272}, {"contract": "HYPE 2026-09-25 88 P", "direction": "gate→bybit", "buy": 8.46, "sell": 6.44, "gross": -2.02, "fee": 0.0657, "net": -2.0857, "days": 7, "apr": -1285.5, "moneyness_pct": 7.2, "per_contract": 8.46, "mult_guess": false, "usable": 121.0, "real": -252.3672}, {"contract": "HYPE 2026-09-19 76 C", "direction": "bybit→gate", "buy": 6.98, "sell": 4.95, "gross": -2.03, "fee": 0.0657, "net": -2.0957, "days": 1, "apr": -10958.8, "moneyness_pct": 7.4, "per_contract": 6.98, "mult_guess": true, "usable": 36.0, "real": -75.4445}, {"contract": "HYPE 2026-09-25 76 C", "direction": "bybit→gate", "buy": 7.56, "sell": 5.42, "gross": -2.14, "fee": 0.0657, "net": -2.2057, "days": 7, "apr": -1521.3, "moneyness_pct": 7.4, "per_contract": 7.56, "mult_guess": true, "usable": 30.0, "real": -66.1704}, {"contract": "HYPE 2026-09-25 90 P", "direction": "gate→bybit", "buy": 10.55, "sell": 8.38, "gross": -2.17, "fee": 0.0657, "net": -2.2357, "days": 7, "apr": -1105.0, "moneyness_pct": 9.6, "per_contract": 10.55, "mult_guess": false, "usable": 121.0, "real": -270.5172}, {"contract": "HYPE 2026-09-25 90 P", "direction": "bybit→gate", "buy": 8.95, "sell": 6.77, "gross": -2.18, "fee": 0.0657, "net": -2.2457, "days": 7, "apr": -1308.3, "moneyness_pct": 9.6, "per_contract": 8.95, "mult_guess": true, "usable": 30.0, "real": -67.3704}, {"contract": "HYPE 2026-09-25 75 C", "direction": "bybit→gate", "buy": 8.31, "sell": 6.07, "gross": -2.24, "fee": 0.0657, "net": -2.3057, "days": 7, "apr": -1446.7, "moneyness_pct": 8.6, "per_contract": 8.31, "mult_guess": true, "usable": 30.0, "real": -69.1704}, {"contract": "HYPE 2026-09-19 75 C", "direction": "gate→bybit", "buy": 8.59, "sell": 6.33, "gross": -2.26, "fee": 0.0657, "net": -2.3257, "days": 1, "apr": -9882.1, "moneyness_pct": 8.6, "per_contract": 8.59, "mult_guess": false, "usable": 36.0, "real": -83.7245}, {"contract": "HYPE 2026-09-25 74 C", "direction": "bybit→gate", "buy": 9.11, "sell": 6.74, "gross": -2.37, "fee": 0.0657, "net": -2.4357, "days": 7, "apr": -1394.1, "moneyness_pct": 9.9, "per_contract": 9.11, "mult_guess": true, "usable": 30.0, "real": -73.0704}, {"contract": "HYPE 2026-09-25 92 P", "direction": "bybit→gate", "buy": 10.85, "sell": 8.18, "gross": -2.67, "fee": 0.0657, "net": -2.7357, "days": 7, "apr": -1314.7, "moneyness_pct": 12.1, "per_contract": 10.85, "mult_guess": true, "usable": 30.0, "real": -82.0704}, {"contract": "HYPE 2026-09-25 70 C", "direction": "gate→bybit", "buy": 14.74, "sell": 11.81, "gross": -2.93, "fee": 0.0657, "net": -2.9957, "days": 7, "apr": -1059.7, "moneyness_pct": 14.7, "per_contract": 14.74, "mult_guess": false, "usable": 12.0, "real": -35.9482}, {"contract": "HYPE 2026-09-25 72 C", "direction": "gate→bybit", "buy": 12.5, "sell": 9.33, "gross": -3.17, "fee": 0.0657, "net": -3.2357, "days": 7, "apr": -1349.7, "moneyness_pct": 12.3, "per_contract": 12.5, "mult_guess": false, "usable": 36.0, "real": -116.4845}, {"contract": "HYPE 2026-09-25 92 P", "direction": "gate→bybit", "buy": 12.75, "sell": 9.49, "gross": -3.26, "fee": 0.0657, "net": -3.3257, "days": 7, "apr": -1360.1, "moneyness_pct": 12.1, "per_contract": 12.75, "mult_guess": false, "usable": 30.0, "real": -99.7704}, {"contract": "HYPE 2026-09-25 95 P", "direction": "gate→bybit", "buy": 15.92, "sell": 11.49, "gross": -4.43, "fee": 0.0657, "net": -4.4957, "days": 7, "apr": -1472.5, "moneyness_pct": 15.7, "per_contract": 15.92, "mult_guess": false, "usable": 36.0, "real": -161.8445}, {"contract": "HYPE 2026-09-25 100 C", "direction": "gate→bybit", "buy": 5.15, "sell": 0.15, "gross": -5.0, "fee": 0.0657, "net": -5.0657, "days": 7, "apr": -5128.9, "moneyness_pct": -21.8, "per_contract": 5.15, "mult_guess": false, "usable": 1.0, "real": -5.0657}, {"contract": "HYPE 2026-09-18 88 P", "direction": "gate→bybit", "buy": 7.14, "sell": 0.07, "gross": -7.07, "fee": 0.0657, "net": -7.1357, "days": 1, "apr": -36477.9, "moneyness_pct": 7.2, "per_contract": 7.14, "mult_guess": false, "usable": 93.0, "real": -663.6182}, {"contract": "HYPE 2026-09-19 75 C", "direction": "bybit→gate", "buy": 8.04, "sell": 0.01, "gross": -8.03, "fee": 0.0657, "net": -8.0957, "days": 1, "apr": -36752.8, "moneyness_pct": 8.6, "per_contract": 8.04, "mult_guess": true, "usable": 36.0, "real": -291.4445}, {"contract": "HYPE 2026-09-19 74 C", "direction": "gate→bybit", "buy": 9.76, "sell": 0.03, "gross": -9.73, "fee": 0.0657, "net": -9.7957, "days": 1, "apr": -36633.4, "moneyness_pct": 9.9, "per_contract": 9.76, "mult_guess": false, "usable": 600.0, "real": -5877.4076}, {"contract": "HYPE 2026-09-25 72 C", "direction": "bybit→gate", "buy": 11.95, "sell": 0.01, "gross": -11.94, "fee": 0.0657, "net": -12.0057, "days": 7, "apr": -5238.6, "moneyness_pct": 12.3, "per_contract": 11.95, "mult_guess": true, "usable": 36.0, "real": -432.2045}, {"contract": "HYPE 2026-09-19 72 C", "direction": "gate→bybit", "buy": 12.13, "sell": 0.01, "gross": -12.12, "fee": 0.0657, "net": -12.1857, "days": 1, "apr": -36667.5, "moneyness_pct": 12.3, "per_contract": 12.13, "mult_guess": false, "usable": 4.0, "real": -48.7427}, {"contract": "HYPE 2026-09-25 70 C", "direction": "bybit→gate", "buy": 14.0, "sell": 0.01, "gross": -13.99, "fee": 0.0657, "net": -14.0557, "days": 7, "apr": -5235.0, "moneyness_pct": 14.7, "per_contract": 14.0, "mult_guess": true, "usable": 36.0, "real": -506.0045}, {"contract": "HYPE 2026-09-19 70 C", "direction": "gate→bybit", "buy": 14.52, "sell": 0.01, "gross": -14.51, "fee": 0.0657, "net": -14.5757, "days": 1, "apr": -36640.0, "moneyness_pct": 14.7, "per_contract": 14.52, "mult_guess": false, "usable": 2.0, "real": -29.1514}, {"contract": "HYPE 2026-09-25 95 P", "direction": "bybit→gate", "buy": 14.71, "sell": 0.1, "gross": -14.61, "fee": 0.0657, "net": -14.6757, "days": 7, "apr": -5202.1, "moneyness_pct": 15.7, "per_contract": 14.71, "mult_guess": true, "usable": 23.0, "real": -337.5406}, {"contract": "HYPE 2026-09-25 100 P", "direction": "bybit→gate", "buy": 20.09, "sell": 0.01, "gross": -20.08, "fee": 0.0657, "net": -20.1457, "days": 7, "apr": -5228.7, "moneyness_pct": 21.8, "per_contract": 20.09, "mult_guess": true, "usable": 36.0, "real": -725.2445}, {"contract": "HYPE 2026-09-25 130 P", "direction": "gate→bybit", "buy": 65.0, "sell": 41.9, "gross": -23.1, "fee": 0.0657, "net": -23.1657, "days": 7, "apr": -1858.3, "moneyness_pct": 58.3, "per_contract": 65.0, "mult_guess": false, "usable": 1.0, "real": -23.1657}, {"contract": "HYPE 2026-09-25 140 P", "direction": "gate→bybit", "buy": 77.51, "sell": 50.68, "gross": -26.83, "fee": 0.0657, "net": -26.8957, "days": 7, "apr": -1809.3, "moneyness_pct": 70.5, "per_contract": 77.51, "mult_guess": false, "usable": 1.0, "real": -26.8957}, {"contract": "HYPE 2026-09-18 76 C", "direction": "bybit→gate", "buy": 120.0, "sell": 0.01, "gross": -119.99, "fee": 0.0657, "net": -120.0557, "days": 1, "apr": -36516.9, "moneyness_pct": 7.4, "per_contract": 120.0, "mult_guess": true, "usable": 5.0, "real": -600.2784}], "index": 82.09907225, "underlying": "HYPE"};
+const FEE = { gate: 0.0005, bybit: 0.0003 };   // taker，按名义价计
+const MONTHS = {JAN:1,FEB:2,MAR:3,APR:4,MAY:5,JUN:6,JUL:7,AUG:8,SEP:9,OCT:10,NOV:11,DEC:12};
+
+function expToISO(sym) {           // 30OCT26 -> 2026-10-30
+  const dd = sym.slice(0,2), mon = sym.slice(2,5).toUpperCase(), yy = sym.slice(5,7);
+  const m = MONTHS[mon];
+  if (!m) return null;
+  return (2000 + parseInt(yy,10)) + '-' + String(m).padStart(2,'0') + '-' + dd;
+}
+
+async function fetchGate() {
+  const r = await fetch('https://api.gateio.ws/api/v4/options/contracts?underlying=HYPE_USDT');
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const list = await r.json();
+  const out = {};
+  for (const c of list) {
+    const p = c.name.split('-');               // HYPE_USDT-20261002-110-P
+    if (p.length < 4) continue;
+    const ymd = p[1];
+    const key = ymd.slice(0,4)+'-'+ymd.slice(4,6)+'-'+ymd.slice(6,8)+'|'+parseFloat(p[2])+'|'+p[3];
+    out[key] = { bid:+c.bid1_price||0, ask:+c.ask1_price||0, bid_sz:+c.bid1_size||0, ask_sz:+c.ask1_size||0 };
+  }
+  return { keys: out, n: list.length, name: 'Gate' };
+}
+
+async function fetchBybit() {
+  const r = await fetch('https://api.bybit.com/v5/market/tickers?category=option&baseCoin=HYPE');
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  const list = (j.result && j.result.list) || [];
+  const out = {};
+  let index = 0;
+  for (const c of list) {
+    const p = c.symbol.split('-');             // HYPE-30OCT26-78-P-USDT
+    if (p.length < 4) continue;
+    const iso = expToISO(p[1]);
+    if (!iso) continue;
+    const key = iso+'|'+parseFloat(p[2])+'|'+p[3];
+    out[key] = { bid:+c.bid1Price||0, ask:+c.ask1Price||0, bid_sz:+c.bid1Size||0, ask_sz:+c.ask1Size||0 };
+    if (!index && +c.indexPrice) index = +c.indexPrice;
+  }
+  return { keys: out, n: list.length, name: 'Bybit', index: index };
+}
+
+function daysTo(iso) {
+  const d = (new Date(iso + 'T08:00:00Z') - new Date()) / 86400000;
+  return Math.max(Math.ceil(d), 1);
+}
+
+const MULT = { gate: 1.0, bybit: 1.0 };   // 1 张 = 1 HYPE（Gate 接口已确认；Bybit 为估）
+
+function compute(gate, bybit, index) {
+  const rows = [];
+  const common = Object.keys(gate.keys).filter(k => k in bybit.keys);
+  for (const key of common) {
+    const g = gate.keys[key], b = bybit.keys[key];
+    const parts = key.split('|');
+    const label = 'HYPE ' + parts[0] + ' ' + (+parts[1]) + ' ' + parts[2];
+    const strike = +parts[1];
+    const fee = (FEE.gate + FEE.bybit) * index;
+    const days = daysTo(parts[0]);
+    const moneyness = (parts[2] === 'C' ? (index - strike) : (strike - index)) / index * 100;
+    const legs = [];
+    if (g.ask > 0 && b.bid > 0) legs.push(['gate→bybit', g.ask, b.bid, g.ask_sz, b.bid_sz, 'gate']);
+    if (b.ask > 0 && g.bid > 0) legs.push(['bybit→gate', b.ask, g.bid, b.ask_sz, g.bid_sz, 'bybit']);
+    for (const [dir, buy, sell, buy_sz, sell_sz, bven] of legs) {
+      const gross = sell - buy, net = gross - fee;
+      let usable = null, real = null;
+      if (buy_sz > 0 && sell_sz > 0) {
+        usable = Math.min(buy_sz * MULT[bven], sell_sz * MULT[dir === 'gate→bybit' ? 'bybit' : 'gate']);
+        real = +(net * usable).toFixed(4);
+      }
+      rows.push({
+        contract: label, direction: dir,
+        buy: +buy.toFixed(4), sell: +sell.toFixed(4),
+        gross: +gross.toFixed(4), fee: +fee.toFixed(4), net: +net.toFixed(4),
+        days: days, apr: +(net / buy * (365 / days) * 100).toFixed(1),
+        moneyness_pct: +moneyness.toFixed(1),
+        per_contract: +(buy * MULT[bven]).toFixed(4),
+        mult_guess: bven === 'bybit',
+        usable: usable === null ? null : +usable.toFixed(2),
+        real: real
+      });
+    }
+  }
+  rows.sort((a, b) => b.net - a.net);
+  return { rows, common: common.length };
+}
+
+function fmt(x, n) { return (+x).toFixed(n); }
+
+function render(data, srcLabel, errs, silent) {
+  const rows = data.rows || [], index = data.index || SNAPSHOT.index || 0;
+  const pos = rows.filter(r => r.net > 0);
+  const best = rows.length ? rows[0] : null;
+
+  document.getElementById('when').textContent = srcLabel;
+  document.getElementById('idx').textContent = index ? fmt(index, 2) : '—';
+  document.getElementById('npair').textContent = rows.length;
+  document.getElementById('nhit').innerHTML = pos.length
+    ? '<span class="pill pos-pill">' + pos.length + ' 条</span>'
+    : '<span class="pill zero-pill">0 条</span>';
+  const bv = document.getElementById('best');
+  bv.textContent = best ? (best.net > 0 ? '+' : '') + fmt(best.net, 4) : '—';
+  bv.style.color = (best && best.net > 0) ? 'var(--pos)' : 'var(--neg)';
+
+  const tb = document.getElementById('tb');
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="12" class="empty">没有可比对的合约</td></tr>';
+  } else {
+    tb.innerHTML = rows.map(r => {
+      const cls = r.net > 0 ? 'pos' : (r.net < 0 ? 'neg' : '');
+      const money = r.moneyness_pct != null
+        ? ((r.moneyness_pct > 0 ? '实值' : '虚值') + Math.abs(r.moneyness_pct).toFixed(0) + '%') : '—';
+      const guess = r.mult_guess ? ' *' : '';
+      const pc = (r.per_contract != null) ? fmt(r.per_contract, 3) + guess : '—';
+      const us = (r.usable != null) ? fmt(r.usable, 1) + ' HYPE' : '未知';
+      const real = (r.real != null) ? fmt(r.real, 2) : '—';
+      return '<tr class="' + cls + '">'
+        + '<td class="c">' + r.contract + '</td>'
+        + '<td class="c">' + r.direction + '</td>'
+        + '<td class="n">' + fmt(r.buy, 3) + '</td>'
+        + '<td class="n">' + fmt(r.sell, 3) + '</td>'
+        + '<td class="n">' + fmt(r.gross, 3) + '</td>'
+        + '<td class="n">' + fmt(r.fee, 4) + '</td>'
+        + '<td class="n strong">' + fmt(r.net, 4) + '</td>'
+        + '<td class="n">' + pc + '</td>'
+        + '<td class="c">' + money + '</td>'
+        + '<td class="c">' + r.days + '</td>'
+        + '<td class="n">' + r.apr + '%</td>'
+        + '<td class="n">' + us + '</td>'
+        + '<td class="n strong">' + real + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+  const msg = document.getElementById('msg');
+  if (silent) {
+    msg.className = 'msg';
+    msg.textContent = '';
+    return;
+  }
+  if (errs && errs.length) {
+    msg.className = 'msg warn';
+    msg.textContent = '部分市场抓取失败：' + errs.join('；') + '（表格为已取到部分）';
+  } else {
+    msg.className = 'msg ok';
+    msg.textContent = '数据已更新。';
+  }
+}
+
+async function update() {
+  const btn = document.getElementById('upd');
+  btn.disabled = true; btn.textContent = '抓取中…';
+  document.getElementById('msg').className = 'msg';
+  document.getElementById('msg').textContent = '正在请求 Gate / Bybit …';
+  const errs = [];
+  let gate = null, bybit = null;
+  try { gate = await fetchGate(); } catch (e) { errs.push('Gate ' + e.message); }
+  try { bybit = await fetchBybit(); } catch (e) { errs.push('Bybit ' + e.message); }
+  if (gate && bybit) {
+    const index = bybit.index || (SNAPSHOT.index || 0);
+    const res = compute(gate, bybit, index);
+    render({ rows: res.rows, index: index },
+           new Date().toLocaleString('zh-CN') + '（浏览器实时抓取）', errs);
+  } else {
+    render(SNAPSHOT, '抓取失败，显示为快照（生成时间见页脚）', errs.length ? errs : ['未知错误']);
+  }
+  btn.disabled = false; btn.textContent = '更新数据';
+}
+
+document.getElementById('upd').addEventListener('click', update);
+
+// 排序
+(function () {
+  const t = document.getElementById('t');
+  const ths = t.querySelectorAll('th');
+  const asc = {};
+  ths.forEach(function (th) {
+    th.addEventListener('click', function () {
+      const c = +th.dataset.c, tb = t.tBodies[0];
+      const rows = Array.prototype.slice.call(tb.rows);
+      asc[c] = !asc[c];
+      rows.sort(function (a, b) {
+        const x = a.cells[c].innerText.replace('%','').trim();
+        const y = b.cells[c].innerText.replace('%','').trim();
+        const nx = parseFloat(x), ny = parseFloat(y);
+        if (!isNaN(nx) && !isNaN(ny)) return asc[c] ? nx - ny : ny - nx;
+        return asc[c] ? x.localeCompare(y) : y.localeCompare(x);
+      });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+})();
+
+// 首屏：先用快照渲染（不提示“已更新”）
+render(SNAPSHOT, '快照（点右上角「更新数据」抓最新）', [], true);
+</script>
+</body>
+</html>

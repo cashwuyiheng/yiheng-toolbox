@@ -1,0 +1,36 @@
+{
+  "listen_host": "127.0.0.1",
+  "listen_port": 8788,
+  "relay_token": "",
+  "default_upstream": "qwen",
+  "log_path": "relay.log",
+  "_池说明": "想用免费额度池：把 upstreams 换成 [{\"name\":\"free-pool\",\"type\":\"pool\"}]，并把 default_upstream 设为 free-pool。网关会自动去池里挑一个还有免费额度的模型。",
+  "upstreams": [
+    {
+      "name": "qwen",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key": "在这里填你的 key",
+      "model": "qwen-plus",
+      "timeout": 60,
+      "proxy": ""
+    },
+    {
+      "name": "deepseek",
+      "base_url": "https://api.deepseek.com/v1",
+      "api_key": "在这里填你的 key",
+      "model": "deepseek-chat",
+      "timeout": 60,
+      "proxy": ""
+    }
+  ],
+  "routes": [
+    {
+      "match": { "keywords": ["长文", "写文章", "总结", "整理"] },
+      "upstream": "deepseek"
+    },
+    {
+      "match": { "model_prefix": "reason" },
+      "upstream": "qwen"
+    }
+  ]
+}
